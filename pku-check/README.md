@@ -63,11 +63,15 @@ Error: PKU is not supported.
 
 ## OS Releases
 
+Execute the following command.
+
+```sh
+cat /etc/os-release
+```
+
 - Ubuntu 20.04 on WSL2
 
 ```properties
-cat /etc/os-release
-
 NAME="Ubuntu"
 VERSION="20.04.6 LTS (Focal Fossa)"
 ID=ubuntu
@@ -85,8 +89,6 @@ UBUNTU_CODENAME=focal
 - Amazon Linux 2023 on AWS
 
 ```properties
-cat /etc/os-release
-
 NAME="Amazon Linux"
 VERSION="2023"
 ID="amzn"
