@@ -14,3 +14,7 @@ optional arguments:
   --show      show the volume OSD
   --hide      hide the volume OSD
 ```
+
+## License
+
+[APACHE LICENSE, VERSION 2.0](../LICENSE)

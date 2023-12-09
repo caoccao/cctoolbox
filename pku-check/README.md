@@ -51,6 +51,10 @@ Linux release is 4.18.0-477.10.1.el8_8.x86_64.
 Error: PKU is not supported.
 ```
 
+## License
+
+[APACHE LICENSE, VERSION 2.0](../LICENSE)
+
 ## References
 
 - [pkey_alloc — Linux manual page](https://man7.org/linux/man-pages/man2/pkey_alloc.2.html)
