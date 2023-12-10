@@ -4,6 +4,8 @@ PKU Check is a console application that checks the availability of Linux kernel 
 
 There are a few Linux distributions in VM messing up with this Linux kernel feature. That results in V8 crashing while accessing protected memory address. PKU Check can detect such defect.
 
+Please refer to [V8 Crash Analysis in JVM on AWS](https://sjtucaocao.medium.com/v8-crash-analysis-in-jvm-on-aws-e20464c74cb9) for more details.
+
 ## Prerequisites
 
 - Linux 4.9+
