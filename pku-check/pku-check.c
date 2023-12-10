@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
   // Allocate key
   int key = pkey_alloc(0, PKEY_DISABLE_WRITE);
   if (key <= 0) {
-    printf("Failed allocate a key though PKU is supported.\n");
+    printf("Failed to allocate a key though PKU is supported.\n");
     printf("The OS is probably in a VM.\n");
     return 0;
   }
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 
   // Free key
   if (pkey_free(key) != 0) {
-    printf("Error: Failed free key %d.\n", key);
+    printf("Error: Failed to free key %d.\n", key);
     return 1;
   }
   printf("Key %d is freed.\n", key);

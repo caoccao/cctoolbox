@@ -30,7 +30,7 @@ gcc pku-check.c -o pku-check
 ```txt
 Linux release is 5.15.133.1-microsoft-standard-WSL2.
 PKU is supported.
-Failed allocate a key though PKU is supported.
+Failed to allocate a key though PKU is supported.
 The OS is probably in a VM.
 ```
 
