@@ -11,7 +11,7 @@ CCToolbox is a collection of small open source tools written by Sam Cao for fun.
 
 ## Linux on Windows
 
-There are some Linux tools absent on Windows. The following tools are written in Rust for Windows.
+There are some Linux tools absent on Windows. The following tools are written in Rust for Windows. They are available at the [Actions](https://github.com/caoccao/cctoolbox/actions).
 
 - [uptime](uptime)
 
