@@ -114,14 +114,11 @@ fn main() {
         let elapsed = build_elapsed(duration);
         elapsed.pretty_print();
     } else if args.since {
-        let now = Local::now();
-        let start_system_time = now.sub(duration);
-        let start_date_time: DateTime<Local> = start_system_time.into();
+        let start_date_time: DateTime<Local> = Local::now().sub(duration);
         println!("{}", start_date_time.format("%Y-%m-%d %H:%M:%S"))
     } else {
         let elapsed = build_elapsed(duration);
-        let now = Local::now();
-        print!("{}", now.format("%H:%M:%S "));
+        print!("{}", Local::now().format("%H:%M:%S "));
         elapsed.print();
     }
 }
