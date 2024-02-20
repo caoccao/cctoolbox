@@ -1,8 +1,8 @@
 # CCToolbox
 
-CCToolbox is a collection of small open source tools.
+CCToolbox is a collection of small open source tools written by Sam Cao for fun.
 
-## Tool List
+## Regular Tools
 
 | Name | Description |
 | ---- | ----------- |

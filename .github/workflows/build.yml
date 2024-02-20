@@ -1,0 +1,36 @@
+name: Build
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build uptime
+    runs-on: windows-latest
+
+    steps:
+
+    - name: Checkout the code
+      uses: actions/checkout@v4
+
+    - name: Setup Rust
+      uses: ATiltedTree/setup-rust@v1
+    
+    - name: Build the Binary
+      run: |
+        cd uptime
+        cargo build --release
+
+    - name: Upload the Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: uptime
+        path: uptime/target/release/*.exe
