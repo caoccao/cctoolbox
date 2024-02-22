@@ -5,6 +5,8 @@ Uptime is a Windows application that displays the system up time. It mimics the 
 ## Usage
 
 ```text
+Uptime for Windows
+
 Usage: uptime.exe [OPTIONS]
 
 Options:

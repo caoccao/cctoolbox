@@ -22,7 +22,7 @@ use windows::Win32::System::SystemInformation::GetTickCount64;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about=None)]
-#[clap(author="Sam Cao", version="0.1.0", about="uptime for Windows")]
+#[clap(author="Sam Cao", version="0.1.0", about="Uptime for Windows")]
 struct Args {
     #[arg(short, long, default_value_t = false)]
     pretty: bool,
