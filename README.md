@@ -17,6 +17,8 @@ There are some Linux tools absent on Windows. The following tools are written in
 
 - [uptime](uptime)
 
+Why rewrite the tools in Rust? Isn't the Git for Windows good enough? The problem of Git for Windows is it requires the Git bash to be alive. These tools written in Rush are pure native Windows applications without any 3rd party dependencies.
+
 ## License
 
 [APACHE LICENSE, VERSION 2.0](LICENSE)
