@@ -31,8 +31,13 @@ jobs:
       uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
         toolchain: stable
-    
-    - name: Build the Binary
+
+    - name: Build Touch
+      run: |
+        cd touch
+        cargo build --release
+
+    - name: Build Uptime
       run: |
         cd uptime
         cargo build --release

@@ -8,6 +8,7 @@ CCToolbox is a collection of small open source tools written by Sam Cao for fun.
 
 There are some Linux tools absent on Windows. The following tools are written in Rust for Windows. They are available at the [Releases](https://github.com/caoccao/cctoolbox/releases).
 
+- [touch](touch)
 - [uptime](uptime)
 
 Why rewrite the tools in Rust? Isn't the Git for Windows good enough? The problem of Git for Windows is it requires the Git bash to be alive. These tools written in Rust are pure native Windows applications without any 3rd party dependencies.

@@ -21,12 +21,17 @@ use std::{ops::Sub, time::Duration};
 use windows::Win32::System::SystemInformation::GetTickCount64;
 
 #[derive(Parser, Debug)]
-#[command(version, about, long_about=None)]
+#[command(name = "uptime")]
+#[command(version = "0.1.0")]
+#[command(about = "Tell how long the system has been running.")]
+#[command(long_about=None)]
 #[clap(author="Sam Cao", version="0.1.0", about="Uptime for Windows")]
 struct Args {
+    /// show uptime in pretty format
     #[arg(short, long, default_value_t = false)]
     pretty: bool,
 
+    /// system up since
     #[arg(short, long, default_value_t = false)]
     since: bool,
 }
