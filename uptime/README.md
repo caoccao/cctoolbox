@@ -15,3 +15,7 @@ Options:
   -h, --help     Print help
   -V, --version  Print version
 ```
+
+## Blog Post
+
+- [Uptime for Windows](https://blog.caoccao.com/uptime-for-windows-f8724164a565)
