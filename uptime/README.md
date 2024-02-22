@@ -10,8 +10,8 @@ Uptime for Windows
 Usage: uptime.exe [OPTIONS]
 
 Options:
-  -p, --pretty
-  -s, --since
+  -p, --pretty   show uptime in pretty format
+  -s, --since    system up since
   -h, --help     Print help
   -V, --version  Print version
 ```
