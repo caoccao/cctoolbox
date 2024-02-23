@@ -42,8 +42,14 @@ jobs:
         cd uptime
         cargo build --release
 
-    - name: Upload the Artifact
+    - name: Upload Touch
       uses: actions/upload-artifact@v4
       with:
-        name: uptime
+        name: touch-windows-x86_64-0.1.0
+        path: touch/target/release/*.exe
+
+    - name: Upload Uptime
+      uses: actions/upload-artifact@v4
+      with:
+        name: uptime-windows-x86_64-0.1.0
         path: uptime/target/release/*.exe
