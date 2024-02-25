@@ -32,98 +32,94 @@ use std::time::Duration;
 #[command(long_about=None)]
 #[clap(author = "Sam Cao", version = "0.1.0", about = "Touch for Windows")]
 struct Args {
-    /// change only the access time
-    #[arg(short, default_value_t = false)]
-    access_time_only: bool,
+  /// change only the access time
+  #[arg(short, default_value_t = false)]
+  access_time_only: bool,
 
-    /// change only the modification time
-    #[arg(short, default_value_t = false)]
-    modification_time_only: bool,
+  /// change only the modification time
+  #[arg(short, default_value_t = false)]
+  modification_time_only: bool,
 
-    /// parse STRING and use it instead of current time
-    #[arg(short, long, value_name = "STRING")]
-    date: Option<String>,
+  /// parse STRING and use it instead of current time
+  #[arg(short, long, value_name = "STRING")]
+  date: Option<String>,
 
-    /// do not create any files
-    #[arg(short = 'c', long = "no-create", default_value_t = false)]
-    no_create: bool,
+  /// do not create any files
+  #[arg(short = 'c', long = "no-create", default_value_t = false)]
+  no_create: bool,
 
-    /// touch repeatedly per interval (milliseconds)
-    #[arg(short, long, default_value_t = 0)]
-    interval: u64,
+  /// touch repeatedly per interval (milliseconds)
+  #[arg(short, long, default_value_t = 0)]
+  interval: u64,
 
-    /// print the log
-    #[arg(short, long, default_value_t = false)]
-    log: bool,
+  /// print the log
+  #[arg(short, long, default_value_t = false)]
+  log: bool,
 
-    /// A FILE argument string
-    #[arg(name = "FILE")]
-    files: Vec<String>,
+  /// A FILE argument string
+  #[arg(name = "FILE")]
+  files: Vec<String>,
 }
 
 fn main() {
-    let args = Args::parse();
-    if args.files.is_empty() {
-        println!("File list is empty.");
+  let args = Args::parse();
+  if args.files.is_empty() {
+    println!("File list is empty.");
+  } else {
+    let mut timestamp: DateTime<Local> = if let Some(ref date) = args.date {
+      match parse(&date) {
+        Ok(result) => result.with_timezone(&Local),
+        Err(_) => Local::now(),
+      }
     } else {
-        let mut timestamp: DateTime<Local> = if let Some(ref date) = args.date {
-            match parse(&date) {
-                Ok(result) => result.with_timezone(&Local),
-                Err(_) => Local::now(),
-            }
+      Local::now()
+    };
+    let optional_duration = if args.interval > 0 {
+      Some(Duration::from_millis(args.interval))
+    } else {
+      None
+    };
+    loop {
+      let now = Local::now();
+      let log_prefix = now.format("%Y-%m-%d %H:%M:%S");
+      if args.date.is_none() {
+        timestamp = now.clone();
+      }
+      let file_time = FileTime::from_unix_time(timestamp.timestamp(), timestamp.nanosecond());
+      for file_name in args.files.iter() {
+        let path = Path::new(file_name);
+        if path.exists() {
+          if args.access_time_only {
+            let _ = set_file_atime(path, file_time);
+          } else if args.modification_time_only {
+            let _ = set_file_mtime(path, file_time);
+          } else {
+            let _ = set_file_times(path, file_time, file_time);
+          }
+          if args.log {
+            println!("{} - Touched {}", log_prefix, file_name)
+          }
         } else {
-            Local::now()
-        };
-        let optional_duration = if args.interval > 0 {
-            Some(Duration::from_millis(args.interval))
-        } else {
-            None
-        };
-        loop {
-            let now = Local::now();
-            let log_prefix = now.format("%Y-%m-%d %H:%M:%S");
-            if args.date.is_none() {
-                timestamp = now.clone();
+          if args.no_create {
+            if args.log {
+              println!("{} - Ignored creating {}", log_prefix, file_name);
             }
-            let file_time = FileTime::from_unix_time(timestamp.timestamp(), timestamp.nanosecond());
-            for file_name in args.files.iter() {
-                let path = Path::new(file_name);
-                if path.exists() {
-                    if args.access_time_only {
-                        let _ = set_file_atime(path, file_time);
-                    } else if args.modification_time_only {
-                        let _ = set_file_mtime(path, file_time);
-                    } else {
-                        let _ = set_file_times(path, file_time, file_time);
-                    }
-                    if args.log {
-                        println!("{} - Touched {}", log_prefix, file_name)
-                    }
-                } else {
-                    if args.no_create {
-                        if args.log {
-                            println!("{} - Ignored creating {}", log_prefix, file_name);
-                        }
-                    } else {
-                        let _ = File::create(file_name);
-                        if args.log {
-                            println!("{} - Created {}", log_prefix, file_name)
-                        }
-                    }
-                }
+          } else {
+            let _ = File::create(file_name);
+            if args.log {
+              println!("{} - Created {}", log_prefix, file_name)
             }
-            if let Some(duration) = optional_duration {
-                if args.log {
-                    println!(
-                        "{} - Sleep {}.",
-                        log_prefix,
-                        pretty_duration(&duration, None)
-                    )
-                }
-                sleep(duration);
-            } else {
-                break;
-            }
+          }
         }
+      }
+      if let Some(duration) = optional_duration {
+        if args.log {
+          println!("{} - Sleep {}.", log_prefix, pretty_duration(&duration, None))
+        }
+        sleep(duration);
+      } else {
+        break;
+      }
     }
+  }
 }
