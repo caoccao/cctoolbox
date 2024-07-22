@@ -20,5 +20,5 @@
 </script>
 
 <Tabs>
-	<Tabs.Tab label="GrepIt"><GrepIt /></Tabs.Tab>
+	<Tabs.Tab label="Grep It"><GrepIt /></Tabs.Tab>
 </Tabs>
