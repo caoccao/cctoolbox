@@ -1,7 +1,8 @@
 <script>
-	import { SvelteUIProvider } from '@svelteuidev/core';
+	import { Tabs } from '@svelteuidev/core';
+	import GrepIt from './grep-it.svelte';
 </script>
 
-<SvelteUIProvider themeObserver="dark">
-	<h1>Test</h1>
-</SvelteUIProvider>
+<Tabs>
+	<Tabs.Tab label="GrepIt"><GrepIt /></Tabs.Tab>
+</Tabs>
