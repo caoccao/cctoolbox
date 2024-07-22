@@ -1,6 +1,6 @@
 # CCToolbox
 
-[![Windows Build](https://github.com/caoccao/cctoolbox/actions/workflows/windows_build.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/windows_build.yml)
+[![Build Touch](https://github.com/caoccao/cctoolbox/actions/workflows/build_touch.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_touch.yml) [![Build Uptime](https://github.com/caoccao/cctoolbox/actions/workflows/build_uptime.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_uptime.yml)
 
 CCToolbox is a collection of small open source tools written by Sam Cao for fun.
 

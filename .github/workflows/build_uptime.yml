@@ -1,0 +1,45 @@
+name: Build Uptime
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "uptime/**"
+      - "!uptime/*.md"
+  push:
+    branches:
+      - main
+    paths:
+      - "uptime/**"
+      - "!uptime/*.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Uptime
+    runs-on: windows-latest
+
+    steps:
+
+    - name: Checkout the code
+      uses: actions/checkout@v4
+
+    - name: Setup Rust
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        toolchain: stable
+
+    - name: Build Uptime
+      run: |
+        cd uptime
+        cargo build --release
+
+    - name: Upload Uptime
+      uses: actions/upload-artifact@v4
+      with:
+        name: uptime-windows-x86_64-0.1.0
+        path: uptime/target/release/*.exe
