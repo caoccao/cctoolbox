@@ -27,17 +27,13 @@
 				flags += 'm';
 			}
 			const regex = new RegExp(patternValue, flags);
-			/**
-			 * @type {string[]}
-			 */
+			/** @type {string[]} */
 			let lines = [];
 			for (const $ of inputValue.matchAll(regex)) {
 				lines.push(eval('`' + templateValue + '`'));
 			}
 			if (removeDuplicatedChecked) {
-				/**
-				 * @type {string[]}
-				 */
+				/** @type {string[]} */
 				const uniqueLines = [];
 				const lineSet = new Set();
 				lines.forEach((line) => {

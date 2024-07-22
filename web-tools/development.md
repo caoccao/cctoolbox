@@ -13,6 +13,9 @@ pnpm create svelte@latest
 # create a new project in my-app
 pnpm create svelte@latest my-app
 
+# install svelte adaptor static
+pnpm i -D @sveltejs/adapter-static
+
 # install svelteui
 pnpm i @svelteuidev/core @svelteuidev/composables
 ```
