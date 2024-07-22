@@ -7,15 +7,15 @@
 	let sortChecked = false;
 
 	let patternValue = '[^\\r\\n]+';
-	let templateValue = '${_0}';
-	let fromValue = '';
-	let toValue = '';
+	let templateValue = '${$[0]}';
+	let inputValue = '';
+	let outputValue = '';
 
 	let errorMessage = '';
 
 	function grep() {
 		errorMessage = '';
-		if (patternValue === '' || fromValue === '') {
+		if (patternValue === '' || inputValue === '') {
 			return;
 		}
 		try {
@@ -27,8 +27,31 @@
 				flags += 'm';
 			}
 			const regex = new RegExp(patternValue, flags);
-			console.log(regex);
-			// TODO
+			/**
+			 * @type {string[]}
+			 */
+			let lines = [];
+			for (const $ of inputValue.matchAll(regex)) {
+				lines.push(eval('`' + templateValue + '`'));
+			}
+			if (removeDuplicatedChecked) {
+				/**
+				 * @type {string[]}
+				 */
+				const uniqueLines = [];
+				const lineSet = new Set();
+				lines.forEach((line) => {
+					if (!lineSet.has(line)) {
+						lineSet.add(line);
+						uniqueLines.push(line);
+					}
+				});
+				lines = uniqueLines;
+			}
+			if (sortChecked) {
+				lines.sort();
+			}
+			outputValue = lines.map((line) => `${line}\n`).join('');
 		} catch (error) {
 			if (error instanceof Error) {
 				errorMessage = error.message;
@@ -40,7 +63,7 @@
 
 	function onClickCopy() {
 		errorMessage = '';
-		navigator.clipboard.writeText(toValue).catch((error) => {
+		navigator.clipboard.writeText(outputValue).catch((error) => {
 			errorMessage = error.message;
 		});
 	}
@@ -54,7 +77,7 @@
 		navigator.clipboard
 			.readText()
 			.then((text) => {
-				fromValue = text;
+				inputValue = text;
 				onChangeGrep();
 			})
 			.catch((error) => {
@@ -87,11 +110,11 @@
 		<Button on:click={onClickCopy}>Copy</Button>
 	</Flex>
 	<Textarea
-		label="From *"
+		label="Input *"
 		rows="10"
 		error={errorMessage}
-		bind:value={fromValue}
+		bind:value={inputValue}
 		on:change={onChangeGrep}
 	/>
-	<Textarea label="To" rows="10" required={false} variant="filled" bind:value={toValue} />
+	<Textarea label="Output" rows="10" required={false} variant="filled" bind:value={outputValue} />
 </Stack>
