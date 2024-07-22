@@ -1,6 +1,6 @@
 # web-tools
 
-[web-tools](https://www.caoccao.com/cctoolbox/) is a set of tools as follows.
+[web-tools](https://www.caoccao.com/cctoolbox/) is a set of web based tools as follows.
 
 | Name | Description |
 | ---- | ----------- |

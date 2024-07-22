@@ -1,6 +1,6 @@
 # CCToolbox
 
-[![Build Touch](https://github.com/caoccao/cctoolbox/actions/workflows/build_touch.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_touch.yml) [![Build Uptime](https://github.com/caoccao/cctoolbox/actions/workflows/build_uptime.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_uptime.yml)
+[![Build Touch](https://github.com/caoccao/cctoolbox/actions/workflows/build_touch.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_touch.yml) [![Build Uptime](https://github.com/caoccao/cctoolbox/actions/workflows/build_uptime.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_uptime.yml) [![Build web-tools](https://github.com/caoccao/cctoolbox/actions/workflows/build_web_tools.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_web_tools.yml)
 
 CCToolbox is a collection of small open source tools written by Sam Cao for fun.
 
@@ -15,7 +15,7 @@ Why rewrite the tools in Rust? Isn't the Git for Windows good enough? The proble
 
 ## web-tools
 
-[web-tools](https://www.caoccao.com/cctoolbox/) is a set of tools as follows.
+[web-tools](https://www.caoccao.com/cctoolbox/) is a set of web based tools as follows.
 
 | Name | Description |
 | ---- | ----------- |
