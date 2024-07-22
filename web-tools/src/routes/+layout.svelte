@@ -1,5 +1,5 @@
-<script>
-	/*
+<script lang="ts">
+  /*
  	 *   Copyright (c) 2024. caoccao.com Sam Cao
  	 *   All rights reserved.
 
@@ -15,23 +15,23 @@
  	 *   See the License for the specific language governing permissions and
  	 *   limitations under the License.
  	 */
-	import { Center, Container, Text, Title, SvelteUIProvider } from '@svelteuidev/core';
+  import { Center, Container, Text, Title, SvelteUIProvider } from '@svelteuidev/core';
 </script>
 
 <SvelteUIProvider themeObserver="light">
-	<Container size="xl">
-		<header>
-			<Center><Title order={1}>web-tools</Title></Center>
-		</header>
-	</Container>
-	<Container size="xl"><slot></slot></Container>
-	<Container size="xl" mt={10}>
-		<footer>
-			<Center>
-				<Text size="xs">
-					© Copyright 2024 Sam Cao <a href="https://www.caoccao.com/">caoccao.com</a>
-				</Text>
-			</Center>
-		</footer>
-	</Container>
+  <Container size="xl">
+    <header>
+      <Center><Title order={1}>web-tools</Title></Center>
+    </header>
+  </Container>
+  <Container size="xl"><slot></slot></Container>
+  <Container size="xl" mt={10}>
+    <footer>
+      <Center>
+        <Text size="xs">
+          © Copyright 2024 Sam Cao <a href="https://www.caoccao.com/">caoccao.com</a>
+        </Text>
+      </Center>
+    </footer>
+  </Container>
 </SvelteUIProvider>

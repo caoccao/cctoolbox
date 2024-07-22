@@ -1,5 +1,5 @@
-<script>
-	/*
+<script lang="ts">
+  /*
  	 *   Copyright (c) 2024. caoccao.com Sam Cao
  	 *   All rights reserved.
 
@@ -15,10 +15,10 @@
  	 *   See the License for the specific language governing permissions and
  	 *   limitations under the License.
  	 */
-	import { Tabs } from '@svelteuidev/core';
-	import GrepIt from './grep-it.svelte';
+  import { Tabs } from '@svelteuidev/core';
+  import GrepIt from './grep-it.svelte';
 </script>
 
 <Tabs>
-	<Tabs.Tab label="Grep It"><GrepIt /></Tabs.Tab>
+  <Tabs.Tab label="Grep It"><GrepIt /></Tabs.Tab>
 </Tabs>

@@ -1,5 +1,5 @@
-<script>
-	/*
+<script lang="ts">
+  /*
  	 *   Copyright (c) 2024. caoccao.com Sam Cao
  	 *   All rights reserved.
 
@@ -15,176 +15,168 @@
  	 *   See the License for the specific language governing permissions and
  	 *   limitations under the License.
  	 */
-	import { Button, Checkbox, Flex, Stack, Textarea, TextInput } from '@svelteuidev/core';
+  import { Button, Checkbox, Flex, Stack, Textarea, TextInput } from '@svelteuidev/core';
 
-	let caseSensitiveChecked = false;
-	let multilineChecked = false;
-	let removeDuplicatedChecked = false;
-	let sortChecked = false;
+  let caseSensitiveChecked = false;
+  let multilineChecked = false;
+  let removeDuplicatedChecked = false;
+  let sortChecked = false;
 
-	let patternValue = '[^\\r\\n]+';
-	let templateValue = '';
-	let inputValue = '';
-	let outputValue = '';
+  let patternValue = '[^\\r\\n]+';
+  let templateValue = '';
+  let inputValue = '';
+  let outputValue = '';
 
-	let errorMessage = '';
+  let errorMessage = '';
 
-	/**
-	 * @param {number} text
-	 */
-	let timerGrep = -1;
+  let timerGrep: number | null = null;
 
-	function grep() {
-		errorMessage = '';
-		if (patternValue === '' || inputValue === '') {
-			return;
-		}
-		try {
-			let flags = 'g';
-			if (!caseSensitiveChecked) {
-				flags += 'i';
-			}
-			if (multilineChecked) {
-				flags += 'm';
-			}
-			const regex = new RegExp(patternValue, flags);
-			/** @type {string[]} */
-			let lines = [];
-			for (const $ of inputValue.matchAll(regex)) {
-				const escapedTemplateValue =
-					templateValue && templateValue !== '' ? templateValue : '${$[0]}';
-				lines.push(eval('`' + escapedTemplateValue + '`'));
-			}
-			if (removeDuplicatedChecked) {
-				/** @type {string[]} */
-				const uniqueLines = [];
-				const lineSet = new Set();
-				lines.forEach((line) => {
-					if (!lineSet.has(line)) {
-						lineSet.add(line);
-						uniqueLines.push(line);
-					}
-				});
-				lines = uniqueLines;
-			}
-			if (sortChecked) {
-				lines.sort();
-			}
-			outputValue = lines.map((line) => `${line}\n`).join('');
-		} catch (error) {
-			if (error instanceof Error) {
-				errorMessage = error.message;
-			} else {
-				errorMessage = `Unknown error ${error}.`;
-			}
-		}
-	}
+  function grep() {
+    errorMessage = '';
+    if (patternValue === '' || inputValue === '') {
+      return;
+    }
+    try {
+      let flags = 'g';
+      if (!caseSensitiveChecked) {
+        flags += 'i';
+      }
+      if (multilineChecked) {
+        flags += 'm';
+      }
+      const regex = new RegExp(patternValue, flags);
+      let lines: Array<string> = [];
+      for (const $ of inputValue.matchAll(regex)) {
+        const escapedTemplateValue =
+          templateValue && templateValue !== '' ? templateValue : '${$[0]}';
+        lines.push(eval('`' + escapedTemplateValue + '`'));
+      }
+      if (removeDuplicatedChecked) {
+        const uniqueLines: Array<string> = [];
+        const lineSet = new Set();
+        lines.forEach((line) => {
+          if (!lineSet.has(line)) {
+            lineSet.add(line);
+            uniqueLines.push(line);
+          }
+        });
+        lines = uniqueLines;
+      }
+      if (sortChecked) {
+        lines.sort();
+      }
+      outputValue = lines.map((line) => `${line}\n`).join('');
+    } catch (error) {
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = `Unknown error ${error}.`;
+      }
+    }
+  }
 
-	function onChangeGrep() {
-		if (timerGrep >= 0) {
-			clearTimeout(timerGrep);
-		}
-		timerGrep = setTimeout(grep, 100);
-	}
+  function onChangeGrep() {
+    if (timerGrep) {
+      clearTimeout(timerGrep);
+    }
+    timerGrep = setTimeout(grep, 100);
+  }
 
-	function onClickCopy() {
-		errorMessage = '';
-		navigator.clipboard.writeText(outputValue).catch((error) => {
-			errorMessage = error.message;
-		});
-	}
+  function onClickCopy() {
+    errorMessage = '';
+    navigator.clipboard.writeText(outputValue).catch((error) => {
+      errorMessage = error.message;
+    });
+  }
 
-	function onClickEscapeDollar() {
-		errorMessage = '';
-		templateValue = templateValue.replaceAll('$', '\\$');
-	}
+  function onClickEscapeDollar() {
+    errorMessage = '';
+    templateValue = templateValue.replaceAll('$', '\\$');
+  }
 
-	function onClickEscapeBackSlash() {
-		errorMessage = '';
-		templateValue = templateValue.replaceAll('\\', '\\\\');
-	}
+  function onClickEscapeBackSlash() {
+    errorMessage = '';
+    templateValue = templateValue.replaceAll('\\', '\\\\');
+  }
 
-	function onClickEscapeBackQuote() {
-		errorMessage = '';
-		templateValue = templateValue.replaceAll('`', '\\`');
-	}
+  function onClickEscapeBackQuote() {
+    errorMessage = '';
+    templateValue = templateValue.replaceAll('`', '\\`');
+  }
 
-	function onClickPaste() {
-		errorMessage = '';
-		navigator.clipboard
-			.readText()
-			.then((text) => {
-				inputValue = text;
-				onChangeGrep();
-			})
-			.catch((error) => {
-				errorMessage = error.message;
-			});
-	}
+  function onClickPaste() {
+    errorMessage = '';
+    navigator.clipboard
+      .readText()
+      .then((text) => {
+        inputValue = text;
+        onChangeGrep();
+      })
+      .catch((error) => {
+        errorMessage = error.message;
+      });
+  }
 
-	/**
-	 * @param {KeyboardEvent} event
-	 */
-	function onKeyupTemplate(event) {
-		if (event.ctrlKey || event.altKey) {
-			switch (event.key) {
-				case '0':
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9':
-					// TODO
-					break;
-			}
-		}
-		onChangeGrep();
-	}
+  function onKeyupTemplate(event: KeyboardEvent) {
+    if (event.ctrlKey || event.altKey) {
+      switch (event.key) {
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+          // TODO
+          break;
+      }
+    }
+    onChangeGrep();
+  }
 </script>
 
 <Stack align="stretch" justify="flex-start">
-	<TextInput
-		label="Pattern *"
-		bind:value={patternValue}
-		on:change={onChangeGrep}
-		on:keyup={onChangeGrep}
-	/>
-	<Textarea
-		label="Template"
-		rows="5"
-		required={false}
-		bind:value={templateValue}
-		on:change={onChangeGrep}
-		on:keyup={onKeyupTemplate}
-	/>
-	<Flex justify="center" gap="lg">
-		<Checkbox label="Case Sensitive" bind:checked={caseSensitiveChecked} on:change={onChangeGrep} />
-		<Checkbox label="Multiline" bind:checked={multilineChecked} on:change={onChangeGrep} />
-		<Checkbox
-			label="Remove Duplicated"
-			bind:checked={removeDuplicatedChecked}
-			on:change={onChangeGrep}
-		/>
-		<Checkbox label="Sort" bind:checked={sortChecked} on:change={onChangeGrep} />
-	</Flex>
-	<Flex justify="center" gap="lg">
-		<Button color="cyan" on:click={onClickEscapeBackSlash}>Escape \</Button>
-		<Button color="cyan" on:click={onClickEscapeBackQuote}>Escape `</Button>
-		<Button color="cyan" on:click={onClickEscapeDollar}>Escape $</Button>
-		<Button on:click={onClickPaste}>Paste</Button>
-		<Button on:click={onClickCopy}>Copy</Button>
-	</Flex>
-	<Textarea
-		label="Input *"
-		rows="10"
-		error={errorMessage}
-		bind:value={inputValue}
-		on:change={onChangeGrep}
-		on:keyup={onChangeGrep}
-	/>
-	<Textarea label="Output" rows="10" required={false} variant="filled" bind:value={outputValue} />
+  <TextInput
+    label="Pattern *"
+    bind:value={patternValue}
+    on:change={onChangeGrep}
+    on:keyup={onChangeGrep}
+  />
+  <Textarea
+    label="Template"
+    rows="5"
+    required={false}
+    bind:value={templateValue}
+    on:change={onChangeGrep}
+    on:keyup={onKeyupTemplate}
+  />
+  <Flex justify="center" gap="lg">
+    <Checkbox label="Case Sensitive" bind:checked={caseSensitiveChecked} on:change={onChangeGrep} />
+    <Checkbox label="Multiline" bind:checked={multilineChecked} on:change={onChangeGrep} />
+    <Checkbox
+      label="Remove Duplicated"
+      bind:checked={removeDuplicatedChecked}
+      on:change={onChangeGrep}
+    />
+    <Checkbox label="Sort" bind:checked={sortChecked} on:change={onChangeGrep} />
+  </Flex>
+  <Flex justify="center" gap="lg">
+    <Button color="cyan" on:click={onClickEscapeBackSlash}>Escape \</Button>
+    <Button color="cyan" on:click={onClickEscapeBackQuote}>Escape `</Button>
+    <Button color="cyan" on:click={onClickEscapeDollar}>Escape $</Button>
+    <Button on:click={onClickPaste}>Paste</Button>
+    <Button on:click={onClickCopy}>Copy</Button>
+  </Flex>
+  <Textarea
+    label="Input *"
+    rows="10"
+    error={errorMessage}
+    bind:value={inputValue}
+    on:change={onChangeGrep}
+    on:keyup={onChangeGrep}
+  />
+  <Textarea label="Output" rows="10" required={false} variant="filled" bind:value={outputValue} />
 </Stack>
