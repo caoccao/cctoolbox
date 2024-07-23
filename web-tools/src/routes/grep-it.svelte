@@ -15,7 +15,7 @@
  	 *   See the License for the specific language governing permissions and
  	 *   limitations under the License.
  	 */
-  import { onMount } from 'svelte';
+  import { afterUpdate, onMount } from 'svelte';
   import { Button, Checkbox, Flex, Stack, Textarea, TextInput } from '@svelteuidev/core';
 
   const fontFamily = '"Courier New", Courier, monospace';
@@ -35,6 +35,17 @@
   let timerGrep: number | null = null;
 
   let textAreaTemplate: HTMLTextAreaElement;
+  let textAreaTemplateSelectionStart: number | null = null;
+  let textAreaTemplateSelectionEnd: number | null = null;
+
+  afterUpdate(() => {
+    if (textAreaTemplateSelectionStart !== null && textAreaTemplateSelectionEnd !== null) {
+      textAreaTemplate.selectionStart = textAreaTemplateSelectionStart;
+      textAreaTemplate.selectionEnd = textAreaTemplateSelectionEnd;
+      textAreaTemplateSelectionStart = null;
+      textAreaTemplateSelectionEnd = null;
+    }
+  });
 
   onMount(() => {
     for (const input of document.getElementsByTagName('input')) {
@@ -151,7 +162,12 @@
         case '7':
         case '8':
         case '9':
-          // TODO
+          textAreaTemplateSelectionStart = textAreaTemplate.selectionStart;
+          textAreaTemplateSelectionEnd = textAreaTemplate.selectionEnd;
+          const prefix = templateValue.slice(0, textAreaTemplateSelectionStart);
+          const suffix = templateValue.slice(textAreaTemplateSelectionEnd);
+          templateValue = `${prefix}\${\$[${event.key}]}${suffix}`;
+          textAreaTemplateSelectionEnd = textAreaTemplateSelectionStart + 7;
           break;
       }
     }
@@ -161,7 +177,6 @@
 
 <Stack align="stretch" justify="flex-start">
   <TextInput
-    id="textInputPattern"
     label="Pattern *"
     bind:value={patternValue}
     on:change={onChangeGrep}
