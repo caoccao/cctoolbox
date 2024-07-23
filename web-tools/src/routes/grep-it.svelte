@@ -16,12 +16,24 @@
     *   limitations under the License.
     */
   import { afterUpdate, onMount } from 'svelte';
-  import { Button, Checkbox, Flex, Modal, Stack, Textarea, TextInput } from '@svelteuidev/core';
+  import {
+    ActionIcon,
+    Button,
+    Checkbox,
+    Flex,
+    Modal,
+    Stack,
+    Textarea,
+    TextInput,
+    Title
+  } from '@svelteuidev/core';
+  import { QuestionMarkCircled } from 'radix-icons-svelte';
 
   const fontFamily = '"Courier New", Courier, monospace';
 
   let caseSensitiveChecked = false;
   let modalChangeTemplateOpened = false;
+  let modalHelpOpened = false;
   let multilineChecked = false;
   let removeDuplicatedChecked = false;
   let sortChecked = false;
@@ -159,6 +171,10 @@
     }
   }
 
+  function onClickModalHelp() {
+    modalHelpOpened = true;
+  }
+
   function onClickPaste() {
     errorMessageInput = '';
     navigator.clipboard
@@ -175,6 +191,10 @@
   function onCloseModalChangeTemplate() {
     errorMessageCode = '';
     modalChangeTemplateOpened = false;
+  }
+
+  function onCloseModalHelp() {
+    modalHelpOpened = false;
   }
 
   function onKeyupTemplate(event: KeyboardEvent) {
@@ -239,12 +259,15 @@
     <Checkbox label="Sort" bind:checked={sortChecked} on:change={onChangeGrep} />
   </Flex>
   <Flex justify="center" gap="lg">
-    <Button color="cyan" on:click={onClickEscapeBackSlash}>Escape \</Button>
-    <Button color="cyan" on:click={onClickEscapeBackQuote}>Escape `</Button>
-    <Button color="cyan" on:click={onClickEscapeDollar}>Escape $</Button>
-    <Button color="cyan" on:click={onClickChangeTemplate}>Change Template</Button>
-    <Button on:click={onClickPaste}>Paste</Button>
-    <Button on:click={onClickCopy}>Copy</Button>
+    <Button color="cyan" on:click={onClickEscapeBackSlash} size="md">Escape \</Button>
+    <Button color="cyan" on:click={onClickEscapeBackQuote} size="md">Escape `</Button>
+    <Button color="cyan" on:click={onClickEscapeDollar} size="md">Escape $</Button>
+    <Button color="cyan" on:click={onClickChangeTemplate} size="md">Change Template</Button>
+    <Button on:click={onClickPaste} size="md">Paste</Button>
+    <Button on:click={onClickCopy} size="md">Copy</Button>
+    <ActionIcon color="yellow" variant="outline" size={42} on:click={onClickModalHelp}>
+      <QuestionMarkCircled size={30} />
+    </ActionIcon>
   </Flex>
   <Textarea
     label="Input *"
@@ -282,4 +305,30 @@
       </Flex>
     </Stack>
   </Modal>
+  <Modal
+    title="Help"
+    centered={true}
+    size="xl"
+    opened={modalHelpOpened}
+    on:close={onCloseModalHelp}
+  >
+    <Stack align="stretch" justify="flex-start">
+      <Title order={3}>Keyboard Shortcuts</Title>
+      <Title order={4}>Template</Title>
+      <ul>
+        <li>
+          <code>Ctrl/Alt+0</code> - <code>Ctrl/Alt+9</code> - Insert
+          <code>&#36;&#123;&#36;[0]}</code> - <code>&#36;&#123;&#36;[9]}</code>
+          to the template.
+        </li>
+      </ul>
+    </Stack>
+  </Modal>
 </Stack>
+
+<style>
+  code {
+    background-color: lightgray;
+    padding: 0.1em 0.2em;
+  }
+</style>

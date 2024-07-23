@@ -18,6 +18,9 @@ pnpm i -D @sveltejs/adapter-static
 
 # install svelteui
 pnpm i @svelteuidev/core @svelteuidev/composables
+
+# install radix-icons-svelte
+pnpm i radix-icons-svelte
 ```
 
 ## Developing
