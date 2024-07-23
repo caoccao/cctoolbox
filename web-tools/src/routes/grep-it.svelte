@@ -1,36 +1,39 @@
 <script lang="ts">
   /*
- 	 *   Copyright (c) 2024. caoccao.com Sam Cao
- 	 *   All rights reserved.
+    *   Copyright (c) 2024. caoccao.com Sam Cao
+    *   All rights reserved.
 
- 	 *   Licensed under the Apache License, Version 2.0 (the "License");
- 	 *   you may not use this file except in compliance with the License.
- 	 *   You may obtain a copy of the License at
+    *   Licensed under the Apache License, Version 2.0 (the "License");
+    *   you may not use this file except in compliance with the License.
+    *   You may obtain a copy of the License at
 
- 	 *   http://www.apache.org/licenses/LICENSE-2.0
+    *   http://www.apache.org/licenses/LICENSE-2.0
 
- 	 *   Unless required by applicable law or agreed to in writing, software
- 	 *   distributed under the License is distributed on an "AS IS" BASIS,
- 	 *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- 	 *   See the License for the specific language governing permissions and
- 	 *   limitations under the License.
- 	 */
+    *   Unless required by applicable law or agreed to in writing, software
+    *   distributed under the License is distributed on an "AS IS" BASIS,
+    *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    *   See the License for the specific language governing permissions and
+    *   limitations under the License.
+    */
   import { afterUpdate, onMount } from 'svelte';
-  import { Button, Checkbox, Flex, Stack, Textarea, TextInput } from '@svelteuidev/core';
+  import { Button, Checkbox, Flex, Modal, Stack, Textarea, TextInput } from '@svelteuidev/core';
 
   const fontFamily = '"Courier New", Courier, monospace';
 
   let caseSensitiveChecked = false;
+  let modalChangeTemplateOpened = false;
   let multilineChecked = false;
   let removeDuplicatedChecked = false;
   let sortChecked = false;
 
-  let patternValue = '[^\\r\\n]+';
-  let templateValue = '';
+  let changeTemplateValue = '$';
   let inputValue = '';
   let outputValue = '';
+  let patternValue = '[^\\r\\n]+';
+  let templateValue = '';
 
-  let errorMessage = '';
+  let errorMessageCode = '';
+  let errorMessageInput = '';
 
   let timerGrep: number | null = null;
 
@@ -45,24 +48,26 @@
       textAreaTemplateSelectionStart = null;
       textAreaTemplateSelectionEnd = null;
     }
+    if (modalChangeTemplateOpened) {
+      setFontFamily();
+    }
   });
 
   onMount(() => {
-    for (const input of document.getElementsByTagName('input')) {
-      input.style.fontFamily = fontFamily;
-    }
-    for (const input of document.getElementsByTagName('textarea')) {
-      input.style.fontFamily = fontFamily;
-    }
+    setFontFamily();
     textAreaTemplate = document.getElementById('textAreaTemplate') as HTMLTextAreaElement;
   });
+
+  function evaluateChangeTemplate(code: string, $: string): string {
+    return eval(code);
+  }
 
   function evaluateTemplate(code: string, $: RegExpExecArray, index: number): string {
     return eval(code);
   }
 
   function grep() {
-    errorMessage = '';
+    errorMessageInput = '';
     if (patternValue === '' || inputValue === '') {
       return;
     }
@@ -100,9 +105,9 @@
       outputValue = lines.map((line) => `${line}\n`).join('');
     } catch (error) {
       if (error instanceof Error) {
-        errorMessage = error.message;
+        errorMessageInput = error.message;
       } else {
-        errorMessage = `Unknown error ${error}.`;
+        errorMessageInput = `Unknown error ${error}.`;
       }
     }
   }
@@ -114,30 +119,48 @@
     timerGrep = setTimeout(grep, 100);
   }
 
+  function onClickChangeTemplate() {
+    modalChangeTemplateOpened = true;
+  }
+
   function onClickCopy() {
-    errorMessage = '';
+    errorMessageInput = '';
     navigator.clipboard.writeText(outputValue).catch((error) => {
-      errorMessage = error.message;
+      errorMessageInput = error.message;
     });
   }
 
   function onClickEscapeDollar() {
-    errorMessage = '';
+    errorMessageInput = '';
     templateValue = templateValue.replaceAll('$', '\\$');
   }
 
   function onClickEscapeBackSlash() {
-    errorMessage = '';
+    errorMessageInput = '';
     templateValue = templateValue.replaceAll('\\', '\\\\');
   }
 
   function onClickEscapeBackQuote() {
-    errorMessage = '';
+    errorMessageInput = '';
     templateValue = templateValue.replaceAll('`', '\\`');
   }
 
+  function onClickModalChangeTemplateExecute() {
+    errorMessageCode = '';
+    try {
+      templateValue = evaluateChangeTemplate(changeTemplateValue, templateValue);
+      modalChangeTemplateOpened = false;
+    } catch (error) {
+      if (error instanceof Error) {
+        errorMessageCode = error.message;
+      } else {
+        errorMessageCode = `Unknown error ${error}.`;
+      }
+    }
+  }
+
   function onClickPaste() {
-    errorMessage = '';
+    errorMessageInput = '';
     navigator.clipboard
       .readText()
       .then((text) => {
@@ -145,8 +168,13 @@
         onChangeGrep();
       })
       .catch((error) => {
-        errorMessage = error.message;
+        errorMessageInput = error.message;
       });
+  }
+
+  function onCloseModalChangeTemplate() {
+    errorMessageCode = '';
+    modalChangeTemplateOpened = false;
   }
 
   function onKeyupTemplate(event: KeyboardEvent) {
@@ -172,6 +200,15 @@
       }
     }
     onChangeGrep();
+  }
+
+  function setFontFamily() {
+    for (const input of document.getElementsByTagName('input')) {
+      input.style.fontFamily = fontFamily;
+    }
+    for (const input of document.getElementsByTagName('textarea')) {
+      input.style.fontFamily = fontFamily;
+    }
   }
 </script>
 
@@ -205,13 +242,14 @@
     <Button color="cyan" on:click={onClickEscapeBackSlash}>Escape \</Button>
     <Button color="cyan" on:click={onClickEscapeBackQuote}>Escape `</Button>
     <Button color="cyan" on:click={onClickEscapeDollar}>Escape $</Button>
+    <Button color="cyan" on:click={onClickChangeTemplate}>Change Template</Button>
     <Button on:click={onClickPaste}>Paste</Button>
     <Button on:click={onClickCopy}>Copy</Button>
   </Flex>
   <Textarea
     label="Input *"
     rows="10"
-    error={errorMessage}
+    error={errorMessageInput}
     bind:value={inputValue}
     on:change={onChangeGrep}
     on:keyup={onChangeGrep}
@@ -224,4 +262,24 @@
     variant="filled"
     value={outputValue}
   />
+  <Modal
+    title="Change Template by JavaScript Code"
+    centered={true}
+    size="lg"
+    opened={modalChangeTemplateOpened}
+    on:close={onCloseModalChangeTemplate}
+  >
+    <Stack align="stretch" justify="flex-start">
+      <Textarea
+        label="JavaScript Code *"
+        rows="10"
+        bind:value={changeTemplateValue}
+        error={errorMessageCode}
+      />
+      <Flex justify="center" gap="sm">
+        <Button color="red" on:click={onCloseModalChangeTemplate}>Cancel</Button>
+        <Button on:click={onClickModalChangeTemplateExecute}>Execute</Button>
+      </Flex>
+    </Stack>
+  </Modal>
 </Stack>
