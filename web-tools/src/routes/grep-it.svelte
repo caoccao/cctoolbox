@@ -15,7 +15,10 @@
  	 *   See the License for the specific language governing permissions and
  	 *   limitations under the License.
  	 */
+  import { onMount } from 'svelte';
   import { Button, Checkbox, Flex, Stack, Textarea, TextInput } from '@svelteuidev/core';
+
+  const fontFamily = '"Courier New", Courier, monospace';
 
   let caseSensitiveChecked = false;
   let multilineChecked = false;
@@ -30,6 +33,18 @@
   let errorMessage = '';
 
   let timerGrep: number | null = null;
+
+  let textAreaTemplate: HTMLTextAreaElement;
+
+  onMount(() => {
+    for (const input of document.getElementsByTagName('input')) {
+      input.style.fontFamily = fontFamily;
+    }
+    for (const input of document.getElementsByTagName('textarea')) {
+      input.style.fontFamily = fontFamily;
+    }
+    textAreaTemplate = document.getElementById('textAreaTemplate') as HTMLTextAreaElement;
+  });
 
   function evaluateTemplate(code: string, $: RegExpExecArray, index: number): string {
     return eval(code);
@@ -146,12 +161,14 @@
 
 <Stack align="stretch" justify="flex-start">
   <TextInput
+    id="textInputPattern"
     label="Pattern *"
     bind:value={patternValue}
     on:change={onChangeGrep}
     on:keyup={onChangeGrep}
   />
   <Textarea
+    id="textAreaTemplate"
     label="Template"
     rows="5"
     required={false}
