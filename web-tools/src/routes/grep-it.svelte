@@ -31,6 +31,10 @@
 
   let timerGrep: number | null = null;
 
+  function evaluateTemplate(code: string, $: RegExpExecArray, index: number): string {
+    return eval(code);
+  }
+
   function grep() {
     errorMessage = '';
     if (patternValue === '' || inputValue === '') {
@@ -46,10 +50,12 @@
       }
       const regex = new RegExp(patternValue, flags);
       let lines: Array<string> = [];
-      for (const $ of inputValue.matchAll(regex)) {
+      let index = 0;
+      for (const match of inputValue.matchAll(regex)) {
         const escapedTemplateValue =
           templateValue && templateValue !== '' ? templateValue : '${$[0]}';
-        lines.push(eval('`' + escapedTemplateValue + '`'));
+        lines.push(evaluateTemplate('`' + escapedTemplateValue + '`', match, index));
+        ++index;
       }
       if (removeDuplicatedChecked) {
         const uniqueLines: Array<string> = [];
@@ -178,5 +184,12 @@
     on:change={onChangeGrep}
     on:keyup={onChangeGrep}
   />
-  <Textarea label="Output" rows="10" required={false} variant="filled" bind:value={outputValue} />
+  <Textarea
+    label="Output"
+    rows="10"
+    readonly={true}
+    required={false}
+    variant="filled"
+    value={outputValue}
+  />
 </Stack>
