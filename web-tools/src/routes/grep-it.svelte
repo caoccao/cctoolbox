@@ -38,7 +38,7 @@
   let removeDuplicatedChecked = false;
   let sortChecked = false;
 
-  let changeTemplateValue = '$';
+  let changeTemplateValue = '_';
   let inputValue = '';
   let outputValue = '';
   let patternValue = '[^\\r\\n]+';
@@ -70,56 +70,59 @@
     textAreaTemplate = document.getElementById('textAreaTemplate') as HTMLTextAreaElement;
   });
 
-  function evaluateChangeTemplate(code: string, $: string): string {
+  function evaluateChangeTemplate(code: string, _: string): string {
     return eval(code);
   }
 
-  function evaluateTemplate(code: string, $: RegExpExecArray, index: number): string {
+  function evaluateTemplate(code: string, _: RegExpExecArray, i: number): string {
     return eval(code);
   }
 
   function grep() {
     errorMessageInput = '';
     if (patternValue === '' || inputValue === '') {
-      return;
-    }
-    try {
-      let flags = 'g';
-      if (!caseSensitiveChecked) {
-        flags += 'i';
-      }
-      if (multilineChecked) {
-        flags += 'm';
-      }
-      const regex = new RegExp(patternValue, flags);
-      let lines: Array<string> = [];
-      let index = 0;
-      for (const match of inputValue.matchAll(regex)) {
-        const escapedTemplateValue =
-          templateValue && templateValue !== '' ? templateValue : '${$[0]}';
-        lines.push(evaluateTemplate('`' + escapedTemplateValue + '`', match, index));
-        ++index;
-      }
-      if (removeDuplicatedChecked) {
-        const uniqueLines: Array<string> = [];
-        const lineSet = new Set();
-        lines.forEach((line) => {
-          if (!lineSet.has(line)) {
-            lineSet.add(line);
-            uniqueLines.push(line);
-          }
-        });
-        lines = uniqueLines;
-      }
-      if (sortChecked) {
-        lines.sort();
-      }
-      outputValue = lines.map((line) => `${line}\n`).join('');
-    } catch (error) {
-      if (error instanceof Error) {
-        errorMessageInput = error.message;
-      } else {
-        errorMessageInput = `Unknown error ${error}.`;
+      outputValue = '';
+    } else {
+      try {
+        let flags = 'g';
+        if (!caseSensitiveChecked) {
+          flags += 'i';
+        }
+        if (multilineChecked) {
+          flags += 'm';
+        }
+        const regex = new RegExp(patternValue, flags);
+        let lines: Array<string> = [];
+        let index = 0;
+        for (const match of inputValue.matchAll(regex)) {
+          const escapedTemplateValue =
+            templateValue && templateValue !== '' ? templateValue : '${_[0]}';
+          const line = evaluateTemplate('`' + escapedTemplateValue + '`', match, index);
+          lines.push(line);
+          ++index;
+        }
+        if (removeDuplicatedChecked) {
+          const uniqueLines: Array<string> = [];
+          const lineSet = new Set();
+          lines.forEach((line) => {
+            if (!lineSet.has(line)) {
+              lineSet.add(line);
+              uniqueLines.push(line);
+            }
+          });
+          lines = uniqueLines;
+        }
+        if (sortChecked) {
+          lines.sort();
+        }
+        outputValue = lines.length > 0 ? lines.map((line) => `${line}\n`).join('') : '';
+      } catch (error) {
+        outputValue = '';
+        if (error instanceof Error) {
+          errorMessageInput = error.message;
+        } else {
+          errorMessageInput = `Unknown error ${error}.`;
+        }
       }
     }
   }
@@ -157,6 +160,13 @@
     templateValue = templateValue.replaceAll('`', '\\`');
   }
 
+  function onClickInputLabel(event: CustomEvent<PointerEvent>) {
+    if ((event as unknown as PointerEvent).ctrlKey) {
+      inputValue = '';
+      onChangeGrep();
+    }
+  }
+
   function onClickModalChangeTemplateExecute() {
     errorMessageCode = '';
     try {
@@ -188,6 +198,20 @@
       });
   }
 
+  function onClickPatternLabel(event: CustomEvent<PointerEvent>) {
+    if ((event as unknown as PointerEvent).ctrlKey) {
+      patternValue = '';
+      onChangeGrep();
+    }
+  }
+
+  function onClickTemplateLabel(event: CustomEvent<PointerEvent>) {
+    if ((event as unknown as PointerEvent).ctrlKey) {
+      templateValue = '';
+      onChangeGrep();
+    }
+  }
+
   function onCloseModalChangeTemplate() {
     errorMessageCode = '';
     modalChangeTemplateOpened = false;
@@ -214,8 +238,10 @@
           textAreaTemplateSelectionEnd = textAreaTemplate.selectionEnd;
           const prefix = templateValue.slice(0, textAreaTemplateSelectionStart);
           const suffix = templateValue.slice(textAreaTemplateSelectionEnd);
-          templateValue = `${prefix}\${\$[${event.key}]}${suffix}`;
-          textAreaTemplateSelectionEnd = textAreaTemplateSelectionStart + 7;
+          templateValue = `${prefix}\${_[${event.key}]}${suffix}`;
+          const newPosition = textAreaTemplateSelectionStart + 7;
+          textAreaTemplateSelectionStart = newPosition;
+          textAreaTemplateSelectionEnd = newPosition;
           break;
       }
     }
@@ -238,6 +264,7 @@
     bind:value={patternValue}
     on:change={onChangeGrep}
     on:keyup={onChangeGrep}
+    on:click={onClickPatternLabel}
   />
   <Textarea
     id="textAreaTemplate"
@@ -247,6 +274,7 @@
     bind:value={templateValue}
     on:change={onChangeGrep}
     on:keyup={onKeyupTemplate}
+    on:click={onClickTemplateLabel}
   />
   <Flex justify="center" gap="lg">
     <Checkbox label="Case Sensitive" bind:checked={caseSensitiveChecked} on:change={onChangeGrep} />
@@ -276,6 +304,7 @@
     bind:value={inputValue}
     on:change={onChangeGrep}
     on:keyup={onChangeGrep}
+    on:click={onClickInputLabel}
   />
   <Textarea
     label="Output"
@@ -313,13 +342,19 @@
     on:close={onCloseModalHelp}
   >
     <Stack align="stretch" justify="flex-start">
-      <Title order={3}>Keyboard Shortcuts</Title>
-      <Title order={4}>Template</Title>
+      <Title order={3}>Template</Title>
+      <Title order={4}>Variables</Title>
+      <ul>
+        <li>
+          <code>_</code> - <code>_</code> is the match result.
+          <code>i</code> - <code>i</code> is the index of the match result.
+        </li>
+      </ul>
+      <Title order={4}>Keyboard Shortcuts</Title>
       <ul>
         <li>
           <code>Ctrl/Alt+0</code> - <code>Ctrl/Alt+9</code> - Insert
-          <code>&#36;&#123;&#36;[0]}</code> - <code>&#36;&#123;&#36;[9]}</code>
-          to the template.
+          <code>&#36;&#123;_[0]}</code> - <code>&#36;&#123;_[9]}</code> to the template.
         </li>
       </ul>
     </Stack>
