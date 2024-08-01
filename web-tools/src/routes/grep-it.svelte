@@ -20,7 +20,7 @@
     ActionIcon,
     Button,
     Checkbox,
-    Flex,
+    Group,
     Modal,
     Stack,
     Textarea,
@@ -276,7 +276,7 @@
     on:keyup={onKeyupTemplate}
     on:click={onClickTemplateLabel}
   />
-  <Flex justify="center" gap="lg">
+  <Group position="center" spacing="md">
     <Checkbox label="Case Sensitive" bind:checked={caseSensitiveChecked} on:change={onChangeGrep} />
     <Checkbox label="Multiline" bind:checked={multilineChecked} on:change={onChangeGrep} />
     <Checkbox
@@ -285,8 +285,8 @@
       on:change={onChangeGrep}
     />
     <Checkbox label="Sort" bind:checked={sortChecked} on:change={onChangeGrep} />
-  </Flex>
-  <Flex justify="center" gap="lg">
+  </Group>
+  <Group position="center" spacing="md">
     <Button color="cyan" on:click={onClickEscapeBackSlash} size="md">Escape \</Button>
     <Button color="cyan" on:click={onClickEscapeBackQuote} size="md">Escape `</Button>
     <Button color="cyan" on:click={onClickEscapeDollar} size="md">Escape $</Button>
@@ -296,7 +296,7 @@
     <ActionIcon color="yellow" variant="outline" size={42} on:click={onClickModalHelp}>
       <QuestionMarkCircled size={30} />
     </ActionIcon>
-  </Flex>
+  </Group>
   <Textarea
     label="Input *"
     rows="10"
@@ -328,10 +328,10 @@
         bind:value={changeTemplateValue}
         error={errorMessageCode}
       />
-      <Flex justify="center" gap="sm">
+      <Group position="center" spacing="md">
         <Button color="red" on:click={onCloseModalChangeTemplate}>Cancel</Button>
         <Button on:click={onClickModalChangeTemplateExecute}>Execute</Button>
-      </Flex>
+      </Group>
     </Stack>
   </Modal>
   <Modal
@@ -346,14 +346,16 @@
       <Title order={4}>Variables</Title>
       <ul>
         <li>
-          <code>_</code> - <code>_</code> is the match result.
-          <code>i</code> - <code>i</code> is the index of the match result.
+          <code>_</code> - is the match result.
+        </li>
+        <li>
+          <code>i</code> - is the index of the match result.
         </li>
       </ul>
       <Title order={4}>Keyboard Shortcuts</Title>
       <ul>
         <li>
-          <code>Ctrl/Alt+0</code> - <code>Ctrl/Alt+9</code> - Insert
+          <code>Ctrl/Alt+0</code> - <code>Ctrl/Alt+9</code> - inserts
           <code>&#36;&#123;_[0]}</code> - <code>&#36;&#123;_[9]}</code> to the template.
         </li>
       </ul>
