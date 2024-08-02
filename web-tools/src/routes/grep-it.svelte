@@ -78,7 +78,7 @@
     return eval(code);
   }
 
-  function grep() {
+  $: {
     errorMessageInput = '';
     if (patternValue === '' || inputValue === '') {
       outputValue = '';
@@ -127,13 +127,6 @@
     }
   }
 
-  function onChangeGrep() {
-    if (timerGrep) {
-      clearTimeout(timerGrep);
-    }
-    timerGrep = setTimeout(grep, 100);
-  }
-
   function onClickChangeTemplate() {
     modalChangeTemplateOpened = true;
   }
@@ -163,7 +156,6 @@
   function onClickInputLabel(event: CustomEvent<PointerEvent>) {
     if ((event as unknown as PointerEvent).ctrlKey) {
       inputValue = '';
-      onChangeGrep();
     }
   }
 
@@ -191,7 +183,6 @@
       .readText()
       .then((text) => {
         inputValue = text;
-        onChangeGrep();
       })
       .catch((error) => {
         errorMessageInput = error.message;
@@ -201,14 +192,12 @@
   function onClickPatternLabel(event: CustomEvent<PointerEvent>) {
     if ((event as unknown as PointerEvent).ctrlKey) {
       patternValue = '';
-      onChangeGrep();
     }
   }
 
   function onClickTemplateLabel(event: CustomEvent<PointerEvent>) {
     if ((event as unknown as PointerEvent).ctrlKey) {
       templateValue = '';
-      onChangeGrep();
     }
   }
 
@@ -245,7 +234,6 @@
           break;
       }
     }
-    onChangeGrep();
   }
 
   function setFontFamily() {
@@ -259,32 +247,21 @@
 </script>
 
 <Stack align="stretch" justify="flex-start">
-  <TextInput
-    label="Pattern *"
-    bind:value={patternValue}
-    on:change={onChangeGrep}
-    on:keyup={onChangeGrep}
-    on:click={onClickPatternLabel}
-  />
+  <TextInput label="Pattern *" bind:value={patternValue} on:click={onClickPatternLabel} />
   <Textarea
     id="textAreaTemplate"
     label="Template"
     rows="5"
     required={false}
     bind:value={templateValue}
-    on:change={onChangeGrep}
     on:keyup={onKeyupTemplate}
     on:click={onClickTemplateLabel}
   />
   <Group position="center" spacing="md">
-    <Checkbox label="Case Sensitive" bind:checked={caseSensitiveChecked} on:change={onChangeGrep} />
-    <Checkbox label="Multiline" bind:checked={multilineChecked} on:change={onChangeGrep} />
-    <Checkbox
-      label="Remove Duplicated"
-      bind:checked={removeDuplicatedChecked}
-      on:change={onChangeGrep}
-    />
-    <Checkbox label="Sort" bind:checked={sortChecked} on:change={onChangeGrep} />
+    <Checkbox label="Case Sensitive" bind:checked={caseSensitiveChecked} />
+    <Checkbox label="Multiline" bind:checked={multilineChecked} />
+    <Checkbox label="Remove Duplicated" bind:checked={removeDuplicatedChecked} />
+    <Checkbox label="Sort" bind:checked={sortChecked} />
   </Group>
   <Group position="center" spacing="md">
     <Button color="cyan" on:click={onClickEscapeBackSlash} size="md">Escape \</Button>
@@ -302,8 +279,6 @@
     rows="10"
     error={errorMessageInput}
     bind:value={inputValue}
-    on:change={onChangeGrep}
-    on:keyup={onChangeGrep}
     on:click={onClickInputLabel}
   />
   <Textarea
