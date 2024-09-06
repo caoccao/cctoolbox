@@ -29,14 +29,14 @@
 
   class SrtLine {
     index: number;
-    mark: number;
+    markerIndex: number;
     start: string;
     end: string;
     text: string;
     type: SrtLineType;
     constructor(index: number, type: SrtLineType) {
       this.index = index;
-      this.mark = -1;
+      this.markerIndex = -1;
       this.start = '';
       this.end = '';
       this.text = '';
@@ -44,7 +44,7 @@
     }
   }
 
-  class SrtMark {
+  class SrtMarker {
     left: SrtLine | null;
     right: SrtLine | null;
     constructor() {
@@ -52,81 +52,92 @@
       this.right = null;
     }
     clear() {
-      this.setMark(-1);
+      this.setMarkerIndex(-1);
     }
-    setMark(mark: number) {
+    setMarkerIndex(index: number) {
       if (this.left) {
-        this.left.mark = mark;
+        this.left.markerIndex = index;
       }
       if (this.right) {
-        this.right.mark = mark;
+        this.right.markerIndex = index;
       }
     }
   }
 
-  let leftSrtText: string | null = null;
-  let rightSrtText: string | null = null;
-  let srtMarks: SrtMark[] = [];
+  let srtMarkers: SrtMarker[] = [];
 
-  $: leftSrtLines = srtTextToSrtLines(leftSrtText, SrtLineType.Left);
-  $: rightSrtLines = srtTextToSrtLines(rightSrtText, SrtLineType.Right);
+  let leftSrtLines: SrtLine[] = [];
+  let rightSrtLines: SrtLine[] = [];
 
   function onClickLeftPaste() {
     navigator.clipboard.readText().then((text) => {
-      leftSrtText = text;
+      leftSrtLines = srtTextToSrtLines(text, SrtLineType.Left);
     });
   }
 
-  function onClickMark(srtLine: SrtLine) {
-    let marks = srtMarks;
-    if (srtLine.mark >= 0) {
-      const index = srtLine.mark;
-      marks[index].clear();
-      marks = marks.filter((_mark, i) => i !== index);
+  function onClickMarker(srtLine: SrtLine) {
+    let markers = srtMarkers;
+    if (srtLine.markerIndex >= 0) {
+      const index = srtLine.markerIndex;
+      markers[index].clear();
+      markers = markers.filter((_marker, i) => i !== index);
     } else {
       if (srtLine.type === SrtLineType.Left) {
         if (
-          !marks.find((mark, i) => {
-            if (mark.left === null) {
-              srtLine.mark = i;
-              mark.left = srtLine;
+          !markers.find((marker, i) => {
+            if (marker.left === null) {
+              srtLine.markerIndex = i;
+              marker.left = srtLine;
               return true;
             }
             return false;
           })
         ) {
-          const mark = new SrtMark();
-          mark.left = srtLine;
-          marks.push(mark);
+          const marker = new SrtMarker();
+          marker.left = srtLine;
+          markers.push(marker);
         }
       } else {
         if (
-          !marks.find((mark, i) => {
-            if (mark.right === null) {
-              srtLine.mark = i;
-              mark.right = srtLine;
+          !markers.find((marker, i) => {
+            if (marker.right === null) {
+              srtLine.markerIndex = i;
+              marker.right = srtLine;
               return true;
             }
             return false;
           })
         ) {
-          const mark = new SrtMark();
-          mark.right = srtLine;
-          marks.push(mark);
+          const marker = new SrtMarker();
+          marker.right = srtLine;
+          markers.push(marker);
         }
       }
     }
-    marks.forEach((mark, i) => {
-      mark.setMark(i);
-    });
-    srtMarks = marks;
+    markers
+      .sort((a, b) => {
+        if (a.left && b.left) {
+          return a.left.index - b.left.index;
+        }
+        if (a.left) {
+          return -1;
+        }
+        if (b.left) {
+          return 1;
+        }
+        return 0;
+      })
+      .forEach((marker, i) => {
+        marker.setMarkerIndex(i);
+      });
+    srtMarkers = markers;
     leftSrtLines = leftSrtLines;
     rightSrtLines = rightSrtLines;
   }
 
   function onClickRightPaste() {
     navigator.clipboard.readText().then((text) => {
-      rightSrtText = text;
+      rightSrtLines = srtTextToSrtLines(text, SrtLineType.Right);
     });
   }
 
@@ -201,16 +212,16 @@
             <tr
               on:click={(event) => {
                 if (event.ctrlKey) {
-                  onClickMark(srtLine);
+                  onClickMarker(srtLine);
                 }
               }}
-              class={srtLine.mark >= 0 && srtLine.mark < srtMarks.length
+              class={srtLine.markerIndex >= 0 && srtLine.markerIndex < srtMarkers.length
                 ? 'data-table-row-marked'
                 : ''}
             >
               <td class="data-table-cell-index">
-                {#if srtLine.mark >= 0 && srtLine.mark < srtMarks.length}
-                  <span class="badge-mark">{`${srtLine.mark + 1}`}</span>
+                {#if srtLine.markerIndex >= 0 && srtLine.markerIndex < srtMarkers.length}
+                  <span class="badge-marker">{`${srtLine.markerIndex + 1}`}</span>
                   {srtLine.index}
                 {:else}
                   <pre>{srtLine.index}</pre>
@@ -241,16 +252,16 @@
             <tr
               on:click={(event) => {
                 if (event.ctrlKey) {
-                  onClickMark(srtLine);
+                  onClickMarker(srtLine);
                 }
               }}
-              class={srtLine.mark >= 0 && srtLine.mark < srtMarks.length
+              class={srtLine.markerIndex >= 0 && srtLine.markerIndex < srtMarkers.length
                 ? 'data-table-row-marked'
                 : ''}
             >
               <td class="data-table-cell-index">
-                {#if srtLine.mark >= 0 && srtLine.mark < srtMarks.length}
-                  <span class="badge-mark">{`${srtLine.mark + 1}`}</span>
+                {#if srtLine.markerIndex >= 0 && srtLine.markerIndex < srtMarkers.length}
+                  <span class="badge-marker">{`${srtLine.markerIndex + 1}`}</span>
                   {srtLine.index}
                 {:else}
                   <pre>{srtLine.index}</pre>
@@ -266,7 +277,7 @@
     </div>
   </Grid.Col>
   <Grid.Col span={12}>
-    <Text align="center">Ctrl + Click to mark or unmark.</Text>
+    <Text align="center" color="dimmed">Ctrl + Click to mark or unmark.</Text>
   </Grid.Col>
 </Grid>
 
@@ -313,7 +324,7 @@
     margin: 0px;
     font-family: Arial, Helvetica, sans-serif;
   }
-  .badge-mark {
+  .badge-marker {
     position: relative;
     top: -0.5em;
     display: inline-block;
