@@ -15,36 +15,113 @@
     *   See the License for the specific language governing permissions and
     *   limitations under the License.
     */
-  import { Button, Grid, Group } from '@svelteuidev/core';
+  import { Button, Grid, Group, Text } from '@svelteuidev/core';
 
   const SRT_LINE_SEPARATOR_PATTERN = /[\r\n]/;
   const SRT_INDEX_PATTERN = /^\s*\d+\s*$/;
   const SRT_TIME_PATTERN =
     /^\s*(\d{2}:\d{2}:\d{2},\d{3})\s*\-{2}\>\s*(\d{2}:\d{2}:\d{2},\d{3})\s*$/;
 
+  enum SrtLineType {
+    Left,
+    Right
+  }
+
   class SrtLine {
     index: number;
+    mark: number;
     start: string;
     end: string;
     text: string;
-    constructor(index: number) {
+    type: SrtLineType;
+    constructor(index: number, type: SrtLineType) {
       this.index = index;
+      this.mark = -1;
       this.start = '';
       this.end = '';
       this.text = '';
+      this.type = type;
+    }
+  }
+
+  class SrtMark {
+    left: SrtLine | null;
+    right: SrtLine | null;
+    constructor() {
+      this.left = null;
+      this.right = null;
+    }
+    clear() {
+      this.setMark(-1);
+    }
+    setMark(mark: number) {
+      if (this.left) {
+        this.left.mark = mark;
+      }
+      if (this.right) {
+        this.right.mark = mark;
+      }
     }
   }
 
   let leftSrtText: string | null = null;
   let rightSrtText: string | null = null;
+  let srtMarks: SrtMark[] = [];
 
-  $: leftSrtLines = srtTextToSrtLines(leftSrtText);
-  $: rightSrtLines = srtTextToSrtLines(rightSrtText);
+  $: leftSrtLines = srtTextToSrtLines(leftSrtText, SrtLineType.Left);
+  $: rightSrtLines = srtTextToSrtLines(rightSrtText, SrtLineType.Right);
 
   function onClickLeftPaste() {
     navigator.clipboard.readText().then((text) => {
       leftSrtText = text;
     });
+  }
+
+  function onClickMark(srtLine: SrtLine) {
+    let marks = srtMarks;
+    if (srtLine.mark >= 0) {
+      const index = srtLine.mark;
+      marks[index].clear();
+      marks = marks.filter((_mark, i) => i !== index);
+    } else {
+      if (srtLine.type === SrtLineType.Left) {
+        if (
+          !marks.find((mark, i) => {
+            if (mark.left === null) {
+              srtLine.mark = i;
+              mark.left = srtLine;
+              return true;
+            }
+            return false;
+          })
+        ) {
+          const mark = new SrtMark();
+          mark.left = srtLine;
+          marks.push(mark);
+        }
+      } else {
+        if (
+          !marks.find((mark, i) => {
+            if (mark.right === null) {
+              srtLine.mark = i;
+              mark.right = srtLine;
+              return true;
+            }
+            return false;
+          })
+        ) {
+          const mark = new SrtMark();
+          mark.right = srtLine;
+          marks.push(mark);
+        }
+      }
+    }
+    marks.forEach((mark, i) => {
+      mark.setMark(i);
+    });
+    srtMarks = marks;
+    leftSrtLines = leftSrtLines;
+    rightSrtLines = rightSrtLines;
   }
 
   function onClickRightPaste() {
@@ -53,11 +130,11 @@
     });
   }
 
-  function srtTextToSrtLines(srtText: string | null): SrtLine[] {
+  function srtTextToSrtLines(text: string | null, type: SrtLineType): SrtLine[] {
     const srtLines: SrtLine[] = [];
-    if (srtText) {
-      srtText = srtText.replace(/\r/g, '');
-      const lines = srtText.split(SRT_LINE_SEPARATOR_PATTERN);
+    if (text) {
+      text = text.replace(/\r/g, '');
+      const lines = text.split(SRT_LINE_SEPARATOR_PATTERN);
       let srtLine: SrtLine | null = null;
       for (const line of lines) {
         if (srtLine) {
@@ -77,7 +154,7 @@
         } else {
           const matcher = line.match(SRT_INDEX_PATTERN);
           if (matcher) {
-            srtLine = new SrtLine(parseInt(matcher[0]));
+            srtLine = new SrtLine(parseInt(matcher[0]), type);
           } else {
             console.warn(`Ignored line: ${line}`);
             continue;
@@ -121,8 +198,24 @@
         </thead>
         <tbody>
           {#each leftSrtLines as srtLine}
-            <tr>
-              <td class="data-table-cell-index"><pre>{srtLine.index}</pre></td>
+            <tr
+              on:click={(event) => {
+                if (event.ctrlKey) {
+                  onClickMark(srtLine);
+                }
+              }}
+              class={srtLine.mark >= 0 && srtLine.mark < srtMarks.length
+                ? 'data-table-row-marked'
+                : ''}
+            >
+              <td class="data-table-cell-index">
+                {#if srtLine.mark >= 0 && srtLine.mark < srtMarks.length}
+                  <span class="badge-mark">{`${srtLine.mark + 1}`}</span>
+                  {srtLine.index}
+                {:else}
+                  <pre>{srtLine.index}</pre>
+                {/if}
+              </td>
               <td class="data-table-cell-start"><pre>{srtLine.start}</pre></td>
               <td class="data-table-cell-end"><pre>{srtLine.end}</pre></td>
               <td class="data-table-cell-text"><pre>{srtLine.text}</pre></td>
@@ -145,8 +238,24 @@
         </thead>
         <tbody>
           {#each rightSrtLines as srtLine}
-            <tr>
-              <td class="data-table-cell-index"><pre>{srtLine.index}</pre></td>
+            <tr
+              on:click={(event) => {
+                if (event.ctrlKey) {
+                  onClickMark(srtLine);
+                }
+              }}
+              class={srtLine.mark >= 0 && srtLine.mark < srtMarks.length
+                ? 'data-table-row-marked'
+                : ''}
+            >
+              <td class="data-table-cell-index">
+                {#if srtLine.mark >= 0 && srtLine.mark < srtMarks.length}
+                  <span class="badge-mark">{`${srtLine.mark + 1}`}</span>
+                  {srtLine.index}
+                {:else}
+                  <pre>{srtLine.index}</pre>
+                {/if}
+              </td>
               <td class="data-table-cell-start"><pre>{srtLine.start}</pre></td>
               <td class="data-table-cell-end"><pre>{srtLine.end}</pre></td>
               <td class="data-table-cell-text"><pre>{srtLine.text}</pre></td>
@@ -155,6 +264,9 @@
         </tbody>
       </table>
     </div>
+  </Grid.Col>
+  <Grid.Col span={12}>
+    <Text align="center">Ctrl + Click to mark or unmark.</Text>
   </Grid.Col>
 </Grid>
 
@@ -193,9 +305,23 @@
   .data-table-header-text {
     text-align: left;
   }
+  .data-table-row-marked {
+    background-color: #eeeeff;
+  }
   pre {
     padding: 0px;
     margin: 0px;
     font-family: Arial, Helvetica, sans-serif;
+  }
+  .badge-mark {
+    position: relative;
+    top: -0.5em;
+    display: inline-block;
+    background-color: darkorange;
+    color: white;
+    font-size: x-small;
+    text-align: center;
+    padding: 0px 3px 0px 3px;
+    border-radius: 5px;
   }
 </style>

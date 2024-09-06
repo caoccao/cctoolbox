@@ -5,3 +5,4 @@
 | Name | Description |
 | ---- | ----------- |
 | Grep It | Apply JavaScript regular expression to input text and template for code generation. |
+| Srt Sync | Sync timeline of two subtitle files. |
