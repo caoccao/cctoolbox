@@ -17,8 +17,10 @@
  	 */
   import { Tabs } from '@svelteuidev/core';
   import GrepIt from './grep-it.svelte';
+  import SrtSync from './srt-sync.svelte';
 </script>
 
 <Tabs>
   <Tabs.Tab label="Grep It"><GrepIt /></Tabs.Tab>
+  <Tabs.Tab label="Srt Sync"><SrtSync /></Tabs.Tab>
 </Tabs>

@@ -47,8 +47,6 @@
   let errorMessageCode = '';
   let errorMessageInput = '';
 
-  let timerGrep: number | null = null;
-
   let textAreaTemplate: HTMLTextAreaElement;
   let textAreaTemplateSelectionStart: number | null = null;
   let textAreaTemplateSelectionEnd: number | null = null;
