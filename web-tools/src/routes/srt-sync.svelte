@@ -15,7 +15,8 @@
     *   See the License for the specific language governing permissions and
     *   limitations under the License.
     */
-  import { Button, Grid, Group, Text } from '@svelteuidev/core';
+  import { ActionIcon, Button, Grid, Group, Modal, Title, Stack } from '@svelteuidev/core';
+  import { QuestionMarkCircled } from 'radix-icons-svelte';
 
   const SRT_LINE_SEPARATOR_PATTERN = /[\r\n]/;
   const SRT_INDEX_PATTERN = /^\s*\d+\s*$/;
@@ -64,7 +65,12 @@
     }
   }
 
+  let modalHelpOpened = false;
+
   let srtMarkers: SrtMarker[] = [];
+
+  let originalLeftSrtLines: SrtLine[] = [];
+  let originalRightSrtLines: SrtLine[] = [];
 
   let leftSrtLines: SrtLine[] = [];
   let rightSrtLines: SrtLine[] = [];
@@ -72,6 +78,7 @@
   function onClickLeftPaste() {
     navigator.clipboard.readText().then((text) => {
       leftSrtLines = srtTextToSrtLines(text, SrtLineType.Left);
+      originalLeftSrtLines = structuredClone(leftSrtLines);
     });
   }
 
@@ -135,10 +142,25 @@
     rightSrtLines = rightSrtLines;
   }
 
+  function onClickModalHelp() {
+    modalHelpOpened = true;
+  }
+
+  function onClickReset() {
+    srtMarkers = [];
+    leftSrtLines = structuredClone(originalLeftSrtLines);
+    rightSrtLines = structuredClone(originalRightSrtLines);
+  }
+
   function onClickRightPaste() {
     navigator.clipboard.readText().then((text) => {
       rightSrtLines = srtTextToSrtLines(text, SrtLineType.Right);
+      originalRightSrtLines = structuredClone(rightSrtLines);
     });
+  }
+
+  function onCloseModalHelp() {
+    modalHelpOpened = false;
   }
 
   function srtTextToSrtLines(text: string | null, type: SrtLineType): SrtLine[] {
@@ -277,9 +299,22 @@
     </div>
   </Grid.Col>
   <Grid.Col span={12}>
-    <Text align="center" color="dimmed">Ctrl + Click to mark or unmark.</Text>
+    <Group position="center" spacing="md">
+      <Button size="sm" color="dark" on:click={onClickReset}>Reset</Button>
+      <ActionIcon color="yellow" variant="outline" size={36} on:click={onClickModalHelp}>
+        <QuestionMarkCircled size={24} />
+      </ActionIcon>
+    </Group>
   </Grid.Col>
 </Grid>
+<Modal title="Help" centered={true} size="xl" opened={modalHelpOpened} on:close={onCloseModalHelp}>
+  <Stack align="stretch" justify="flex-start">
+    <Title order={3}>Mark</Title>
+    <ul>
+      <li>Ctrl + Click to mark or unmark</li>
+    </ul>
+  </Stack>
+</Modal>
 
 <style>
   .data-table-container {

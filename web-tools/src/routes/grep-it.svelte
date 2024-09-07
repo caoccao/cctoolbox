@@ -262,15 +262,12 @@
     <Checkbox label="Sort" bind:checked={sortChecked} />
   </Group>
   <Group position="center" spacing="md">
-    <Button color="cyan" on:click={onClickEscapeBackSlash} size="md">Escape \</Button>
-    <Button color="cyan" on:click={onClickEscapeBackQuote} size="md">Escape `</Button>
-    <Button color="cyan" on:click={onClickEscapeDollar} size="md">Escape $</Button>
-    <Button color="cyan" on:click={onClickChangeTemplate} size="md">Change Template</Button>
-    <Button on:click={onClickPaste} size="md">Paste</Button>
-    <Button on:click={onClickCopy} size="md">Copy</Button>
-    <ActionIcon color="yellow" variant="outline" size={42} on:click={onClickModalHelp}>
-      <QuestionMarkCircled size={30} />
-    </ActionIcon>
+    <Button color="cyan" on:click={onClickEscapeBackSlash} size="sm">Escape \</Button>
+    <Button color="cyan" on:click={onClickEscapeBackQuote} size="sm">Escape `</Button>
+    <Button color="cyan" on:click={onClickEscapeDollar} size="sm">Escape $</Button>
+    <Button color="cyan" on:click={onClickChangeTemplate} size="sm">Change Template</Button>
+    <Button on:click={onClickPaste} size="sm">Paste</Button>
+    <Button on:click={onClickCopy} size="sm">Copy</Button>
   </Group>
   <Textarea
     label="Input *"
@@ -287,54 +284,53 @@
     variant="filled"
     value={outputValue}
   />
-  <Modal
-    title="Change Template by JavaScript Code"
-    centered={true}
-    size="lg"
-    opened={modalChangeTemplateOpened}
-    on:close={onCloseModalChangeTemplate}
-  >
-    <Stack align="stretch" justify="flex-start">
-      <Textarea
-        label="JavaScript Code *"
-        rows="10"
-        bind:value={changeTemplateValue}
-        error={errorMessageCode}
-      />
-      <Group position="center" spacing="md">
-        <Button color="red" on:click={onCloseModalChangeTemplate}>Cancel</Button>
-        <Button on:click={onClickModalChangeTemplateExecute}>Execute</Button>
-      </Group>
-    </Stack>
-  </Modal>
-  <Modal
-    title="Help"
-    centered={true}
-    size="xl"
-    opened={modalHelpOpened}
-    on:close={onCloseModalHelp}
-  >
-    <Stack align="stretch" justify="flex-start">
-      <Title order={3}>Template</Title>
-      <Title order={4}>Variables</Title>
-      <ul>
-        <li>
-          <code>_</code> - is the match result.
-        </li>
-        <li>
-          <code>i</code> - is the index of the match result.
-        </li>
-      </ul>
-      <Title order={4}>Keyboard Shortcuts</Title>
-      <ul>
-        <li>
-          <code>Ctrl/Alt+0</code> - <code>Ctrl/Alt+9</code> - inserts
-          <code>&#36;&#123;_[0]}</code> - <code>&#36;&#123;_[9]}</code> to the template.
-        </li>
-      </ul>
-    </Stack>
-  </Modal>
+  <Group position="center" spacing="md">
+    <ActionIcon color="yellow" variant="outline" size={36} on:click={onClickModalHelp}>
+      <QuestionMarkCircled size={24} />
+    </ActionIcon>
+  </Group>
 </Stack>
+<Modal
+  title="Change Template by JavaScript Code"
+  centered={true}
+  size="lg"
+  opened={modalChangeTemplateOpened}
+  on:close={onCloseModalChangeTemplate}
+>
+  <Stack align="stretch" justify="flex-start">
+    <Textarea
+      label="JavaScript Code *"
+      rows="10"
+      bind:value={changeTemplateValue}
+      error={errorMessageCode}
+    />
+    <Group position="center" spacing="md">
+      <Button color="red" on:click={onCloseModalChangeTemplate}>Cancel</Button>
+      <Button on:click={onClickModalChangeTemplateExecute}>Execute</Button>
+    </Group>
+  </Stack>
+</Modal>
+<Modal title="Help" centered={true} size="xl" opened={modalHelpOpened} on:close={onCloseModalHelp}>
+  <Stack align="stretch" justify="flex-start">
+    <Title order={3}>Template</Title>
+    <Title order={4}>Variables</Title>
+    <ul>
+      <li>
+        <code>_</code> - is the match result.
+      </li>
+      <li>
+        <code>i</code> - is the index of the match result.
+      </li>
+    </ul>
+    <Title order={4}>Keyboard Shortcuts</Title>
+    <ul>
+      <li>
+        <code>Ctrl/Alt+0</code> - <code>Ctrl/Alt+9</code> - inserts
+        <code>&#36;&#123;_[0]}</code> - <code>&#36;&#123;_[9]}</code> to the template.
+      </li>
+    </ul>
+  </Stack>
+</Modal>
 
 <style>
   code {
