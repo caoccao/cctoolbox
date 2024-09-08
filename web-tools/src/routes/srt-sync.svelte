@@ -34,11 +34,11 @@
     end: string;
     text: string;
     type: SrtLineType;
-    constructor(index: number, type: SrtLineType) {
+    constructor(index: number, start: string, end: string, type: SrtLineType) {
       this.index = index;
       this.markerIndex = -1;
-      this.start = '';
-      this.end = '';
+      this.start = start;
+      this.end = end;
       this.text = '';
       this.type = type;
     }
@@ -159,37 +159,28 @@
     if (text) {
       text = text.replace(/\r/g, '');
       const lines = text.split(SRT_LINE_SEPARATOR_PATTERN);
+      const length = lines.length;
       let srtLine: SrtLine | null = null;
-      for (const line of lines) {
-        if (srtLine) {
-          if (line === '') {
-            srtLine.text = srtLine.text.trimEnd();
+      for (let i = 0; i < length; ++i) {
+        const line = lines[i];
+        const indexMatcher = line.match(SRT_INDEX_PATTERN);
+        if (indexMatcher && i < length - 1) {
+          ++i;
+          const timeMatcher = lines[i].match(SRT_TIME_PATTERN);
+          if (timeMatcher) {
+            srtLine = new SrtLine(parseInt(indexMatcher[0]), timeMatcher[1], timeMatcher[2], type);
             srtLines.push(srtLine);
-            srtLine = null;
-          } else {
-            const matcher = line.match(SRT_TIME_PATTERN);
-            if (matcher) {
-              srtLine.start = matcher[1];
-              srtLine.end = matcher[2];
-            } else {
-              srtLine.text += line + '\n';
-            }
           }
+        } else if (srtLine) {
+          srtLine.text += line + '\n';
         } else {
-          const matcher = line.match(SRT_INDEX_PATTERN);
-          if (matcher) {
-            srtLine = new SrtLine(parseInt(matcher[0]), type);
-          } else {
-            console.warn(`Ignored line: ${line}`);
-            continue;
-          }
+          console.warn(`Ignored line: ${line}`);
         }
       }
-      if (srtLine) {
-        srtLine.text = srtLine.text.trimEnd();
-        srtLines.push(srtLine);
-      }
     }
+    srtLines.forEach((srtLine) => {
+      srtLine.text = srtLine.text.trimEnd();
+    });
     return srtLines;
   }
 </script>
