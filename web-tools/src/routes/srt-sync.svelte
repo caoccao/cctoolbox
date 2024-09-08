@@ -23,6 +23,7 @@
     /^\s*(\d{2}:\d{2}:\d{2},\d{3})\s*\-{2}\>\s*(\d{2}:\d{2}:\d{2},\d{3})\s*$/;
 
   const millsToSrtTime = (mills: number) => {
+    mills = Math.round(mills);
     const millionSeconds = mills % 1000;
     const seconds = ((mills - millionSeconds) / 1000) % 60;
     const minutes = ((mills - millionSeconds - seconds * 1000) / 60000) % 60;
@@ -102,6 +103,20 @@
       if (this.right) {
         this.right.markerIndex = index;
       }
+    }
+  }
+
+  class Velocity {
+    diffFrom: number;
+    diffTo: number;
+    timeFrom: number;
+    timeTo: number;
+
+    constructor(diffFrom: number, diffTo: number, timeFrom: number, timeTo: number) {
+      this.diffFrom = diffFrom;
+      this.diffTo = diffTo;
+      this.timeFrom = timeFrom;
+      this.timeTo = timeTo;
     }
   }
 
@@ -232,7 +247,8 @@
   }
 
   function sync(type: SrtLineType) {
-    if (srtMarkers.length == 1) {
+    const length = srtMarkers.length;
+    if (length == 1) {
       if (type === SrtLineType.Left) {
         const diffTime = srtMarkers[0].right!.getStartTime() - srtMarkers[0].left!.getStartTime();
         leftSrtLines.forEach((srtLine) => {
@@ -241,14 +257,83 @@
         leftSrtLines = leftSrtLines;
       } else {
         const diffTime = srtMarkers[0].left!.getStartTime() - srtMarkers[0].right!.getStartTime();
-        console.log(diffTime);
         rightSrtLines.forEach((srtLine) => {
           srtLine.shiftTime(diffTime);
         });
         rightSrtLines = rightSrtLines;
       }
-    } else if (srtMarkers.length > 1) {
-      // TODO
+    } else if (length > 1) {
+      if (type === SrtLineType.Left) {
+        const velocities: Velocity[] = [];
+        for (let i = 0; i < length - 1; ++i) {
+          velocities.push(
+            new Velocity(
+              srtMarkers[i].right!.getStartTime() - srtMarkers[i].left!.getStartTime(),
+              srtMarkers[i + 1].right!.getStartTime() - srtMarkers[i + 1].left!.getStartTime(),
+              srtMarkers[i].left!.getStartTime(),
+              srtMarkers[i + 1].left!.getStartTime()
+            )
+          );
+        }
+        let velocityIndex = 0;
+        leftSrtLines.forEach((srtLine) => {
+          const startTime = srtLine.getStartTime();
+          let velocity = velocities[velocityIndex];
+          while (startTime > velocity.timeTo && velocityIndex < velocities.length - 1) {
+            ++velocityIndex;
+            velocity = velocities[velocityIndex];
+          }
+          if (
+            (velocityIndex == 0 && startTime < velocity.timeFrom) ||
+            (velocityIndex == velocities.length - 1 && startTime > velocity.timeTo) ||
+            (startTime >= velocity.timeFrom && startTime <= velocity.timeTo)
+          ) {
+            srtLine.shiftTime(
+              velocity.diffFrom +
+                ((velocity.diffTo - velocity.diffFrom) * (startTime - velocity.timeFrom)) /
+                  (velocity.timeTo - velocity.timeFrom)
+            );
+          } else {
+            console.warn('Ignore', srtLine);
+          }
+        });
+        leftSrtLines = leftSrtLines;
+      } else {
+        const velocities: Velocity[] = [];
+        for (let i = 0; i < length - 1; ++i) {
+          velocities.push(
+            new Velocity(
+              srtMarkers[i].left!.getStartTime() - srtMarkers[i].right!.getStartTime(),
+              srtMarkers[i + 1].left!.getStartTime() - srtMarkers[i + 1].right!.getStartTime(),
+              srtMarkers[i].right!.getStartTime(),
+              srtMarkers[i + 1].right!.getStartTime()
+            )
+          );
+        }
+        let velocityIndex = 0;
+        rightSrtLines.forEach((srtLine) => {
+          const startTime = srtLine.getStartTime();
+          let velocity = velocities[velocityIndex];
+          while (startTime > velocity.timeTo && velocityIndex < velocities.length - 1) {
+            ++velocityIndex;
+            velocity = velocities[velocityIndex];
+          }
+          if (
+            (velocityIndex == 0 && startTime < velocity.timeFrom) ||
+            (velocityIndex == velocities.length - 1 && startTime > velocity.timeTo) ||
+            (startTime >= velocity.timeFrom && startTime <= velocity.timeTo)
+          ) {
+            srtLine.shiftTime(
+              velocity.diffFrom +
+                ((velocity.diffTo - velocity.diffFrom) * (startTime - velocity.timeFrom)) /
+                  (velocity.timeTo - velocity.timeFrom)
+            );
+          } else {
+            console.warn('Ignore', srtLine);
+          }
+        });
+        rightSrtLines = rightSrtLines;
+      }
     }
   }
 </script>
