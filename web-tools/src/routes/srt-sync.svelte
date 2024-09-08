@@ -22,6 +22,26 @@
   const SRT_TIME_PATTERN =
     /^\s*(\d{2}:\d{2}:\d{2},\d{3})\s*\-{2}\>\s*(\d{2}:\d{2}:\d{2},\d{3})\s*$/;
 
+  const millsToSrtTime = (mills: number) => {
+    const millionSeconds = mills % 1000;
+    const seconds = ((mills - millionSeconds) / 1000) % 60;
+    const minutes = ((mills - millionSeconds - seconds * 1000) / 60000) % 60;
+    const hours = (mills - millionSeconds - seconds * 1000 - minutes * 60000) / 360000;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds
+      .toString()
+      .padStart(2, '0')},${millionSeconds.toString().padStart(3, '0')}`;
+  };
+
+  const srtTimeToMills = (srtTime: string) => {
+    const times = srtTime.split(/[:,]+/g);
+    return (
+      parseInt(times[0]) * 3600000 +
+      parseInt(times[1]) * 60000 +
+      parseInt(times[2]) * 1000 +
+      parseInt(times[3])
+    );
+  };
+
   enum SrtLineType {
     Left,
     Right
@@ -41,6 +61,27 @@
       this.end = end;
       this.text = '';
       this.type = type;
+    }
+
+    getEndTime() {
+      return srtTimeToMills(this.end);
+    }
+
+    getStartTime() {
+      return srtTimeToMills(this.start);
+    }
+
+    setEndTime(mills: number) {
+      this.end = millsToSrtTime(mills);
+    }
+
+    setStartTime(mills: number) {
+      this.start = millsToSrtTime(mills);
+    }
+
+    shiftTime(diffTime: number) {
+      this.setStartTime(this.getStartTime() + diffTime);
+      this.setEndTime(this.getEndTime() + diffTime);
     }
   }
 
@@ -63,8 +104,6 @@
       }
     }
   }
-
-  let modalHelpOpened = false;
 
   let srtMarkers: SrtMarker[] = [];
 
@@ -154,6 +193,14 @@
     });
   }
 
+  function onClickSyncToLeft() {
+    sync(SrtLineType.Left);
+  }
+
+  function onClickSyncToRight() {
+    sync(SrtLineType.Right);
+  }
+
   function srtTextToSrtLines(text: string | null, type: SrtLineType): SrtLine[] {
     const srtLines: SrtLine[] = [];
     if (text) {
@@ -183,6 +230,27 @@
     });
     return srtLines;
   }
+
+  function sync(type: SrtLineType) {
+    if (srtMarkers.length == 1) {
+      if (type === SrtLineType.Left) {
+        const diffTime = srtMarkers[0].right!.getStartTime() - srtMarkers[0].left!.getStartTime();
+        leftSrtLines.forEach((srtLine) => {
+          srtLine.shiftTime(diffTime);
+        });
+        leftSrtLines = leftSrtLines;
+      } else {
+        const diffTime = srtMarkers[0].left!.getStartTime() - srtMarkers[0].right!.getStartTime();
+        console.log(diffTime);
+        rightSrtLines.forEach((srtLine) => {
+          srtLine.shiftTime(diffTime);
+        });
+        rightSrtLines = rightSrtLines;
+      }
+    } else if (srtMarkers.length > 1) {
+      // TODO
+    }
+  }
 </script>
 
 <Grid>
@@ -190,14 +258,22 @@
     <Group position="center" spacing="md">
       <Button size="sm" on:click={onClickLeftPaste}>Paste</Button>
       <Button size="sm">Copy</Button>
-      <Button size="sm">Sync ⇨</Button>
+      <Button
+        size="sm"
+        on:click={onClickSyncToRight}
+        disabled={leftSrtLines.length == 0 || rightSrtLines.length == 0}>Sync ⇨</Button
+      >
     </Group>
   </Grid.Col>
   <Grid.Col span={6}>
     <Group position="center" spacing="md">
       <Button size="sm" on:click={onClickRightPaste}>Paste</Button>
       <Button size="sm">Copy</Button>
-      <Button size="sm">⇦ Sync</Button>
+      <Button
+        size="sm"
+        on:click={onClickSyncToLeft}
+        disabled={leftSrtLines.length == 0 || rightSrtLines.length == 0}>⇦ Sync</Button
+      >
     </Group>
   </Grid.Col>
   <Grid.Col span={6}>
