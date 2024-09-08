@@ -15,8 +15,7 @@
     *   See the License for the specific language governing permissions and
     *   limitations under the License.
     */
-  import { ActionIcon, Button, Grid, Group, Modal, Title, Stack } from '@svelteuidev/core';
-  import { QuestionMarkCircled } from 'radix-icons-svelte';
+  import { Button, Grid, Group, Title } from '@svelteuidev/core';
 
   const SRT_LINE_SEPARATOR_PATTERN = /[\r\n]/;
   const SRT_INDEX_PATTERN = /^\s*\d+\s*$/;
@@ -142,10 +141,6 @@
     rightSrtLines = rightSrtLines;
   }
 
-  function onClickModalHelp() {
-    modalHelpOpened = true;
-  }
-
   function onClickReset() {
     srtMarkers = [];
     leftSrtLines = structuredClone(originalLeftSrtLines);
@@ -157,10 +152,6 @@
       rightSrtLines = srtTextToSrtLines(text, SrtLineType.Right);
       originalRightSrtLines = structuredClone(rightSrtLines);
     });
-  }
-
-  function onCloseModalHelp() {
-    modalHelpOpened = false;
   }
 
   function srtTextToSrtLines(text: string | null, type: SrtLineType): SrtLine[] {
@@ -298,23 +289,24 @@
       </table>
     </div>
   </Grid.Col>
+  {#if leftSrtLines.length == 0 && rightSrtLines.length == 0}
+    <Grid.Col span={12}>
+      <Title order={2} color="gray" align="center" style="line-height: 1.5em" pt="1em">
+        Paste the Srt file content.
+      </Title>
+      <Title order={2} color="gray" align="center" style="line-height: 1.5em" pb="1em">
+        Ctrl + Click to mark or unmark.
+      </Title>
+    </Grid.Col>
+  {/if}
   <Grid.Col span={12}>
     <Group position="center" spacing="md">
-      <Button size="sm" color="dark" on:click={onClickReset}>Reset</Button>
-      <ActionIcon color="yellow" variant="outline" size={36} on:click={onClickModalHelp}>
-        <QuestionMarkCircled size={24} />
-      </ActionIcon>
+      <Button size="sm" variant="outline" on:click={onClickReset} disabled={srtMarkers.length == 0}>
+        Reset
+      </Button>
     </Group>
   </Grid.Col>
 </Grid>
-<Modal title="Help" centered={true} size="xl" opened={modalHelpOpened} on:close={onCloseModalHelp}>
-  <Stack align="stretch" justify="flex-start">
-    <Title order={3}>Mark</Title>
-    <ul>
-      <li>Ctrl + Click to mark or unmark</li>
-    </ul>
-  </Stack>
-</Modal>
 
 <style>
   .data-table-container {
