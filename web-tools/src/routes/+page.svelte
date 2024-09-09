@@ -18,9 +18,39 @@
   import { Tabs } from '@svelteuidev/core';
   import GrepIt from './grep-it.svelte';
   import SrtSync from './srt-sync.svelte';
+
+  const routingList = ['#grep-it', '#srt-sync'];
+  const routingMap = new Map(routingList.map((value, index) => [value, index]));
+
+  let initialTabIndex = getTabIndexFromHash();
+
+  function onHashChange(_event: HashChangeEvent) {
+    initialTabIndex = getTabIndexFromHash();
+  }
+
+  function onLoad() {
+    initialTabIndex = getTabIndexFromHash();
+  }
+
+  function onTabChange(event: CustomEvent<{ index: number; key: string }>) {
+    const index = event.detail.index;
+    if (index >= 0 && index < routingList.length) {
+      window.location.hash = routingList[index];
+    }
+  }
+
+  function getTabIndexFromHash() {
+    const hash = window.location.hash;
+    if (routingMap.has(hash)) {
+      return routingMap.get(hash) as number;
+    }
+    return 0;
+  }
 </script>
 
-<Tabs>
+<svelte:window on:hashchange={onHashChange} on:load={onLoad} />
+
+<Tabs bind:initialTab={initialTabIndex} on:change={onTabChange}>
   <Tabs.Tab label="Grep It"><GrepIt /></Tabs.Tab>
   <Tabs.Tab label="Srt Sync"><SrtSync /></Tabs.Tab>
 </Tabs>
