@@ -30,7 +30,7 @@
     const millionSeconds = millis % 1000;
     const seconds = ((millis - millionSeconds) / 1000) % 60;
     const minutes = ((millis - millionSeconds - seconds * 1000) / 60000) % 60;
-    const hours = (millis - millionSeconds - seconds * 1000 - minutes * 60000) / 360000;
+    const hours = (millis - millionSeconds - seconds * 1000 - minutes * 60000) / 3600000;
     return `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds
       .toString()
       .padStart(2, '0')},${millionSeconds.toString().padStart(3, '0')}`;
