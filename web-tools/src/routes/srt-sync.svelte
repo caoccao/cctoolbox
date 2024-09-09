@@ -20,20 +20,22 @@
   const SRT_LINE_SEPARATOR_PATTERN = /[\r\n]/;
   const SRT_INDEX_PATTERN = /^\s*\d+\s*$/;
   const SRT_TIME_PATTERN =
-    /^\s*(\d{2}:\d{2}:\d{2},\d{3})\s*\-{2}\>\s*(\d{2}:\d{2}:\d{2},\d{3})\s*$/;
+    /^\s*(\-?)(\d{2}:\d{2}:\d{2},\d{3})\s*\-{2}\>\s*(\-?)(\d{2}:\d{2}:\d{2},\d{3})\s*$/;
 
-  const millsToSrtTime = (mills: number) => {
-    mills = Math.round(mills);
-    const millionSeconds = mills % 1000;
-    const seconds = ((mills - millionSeconds) / 1000) % 60;
-    const minutes = ((mills - millionSeconds - seconds * 1000) / 60000) % 60;
-    const hours = (mills - millionSeconds - seconds * 1000 - minutes * 60000) / 360000;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds
+  const millisToSrtTime = (millis: number) => {
+    millis = Math.round(millis);
+    const sign = millis < 0 ? '-' : '';
+    millis = Math.abs(millis);
+    const millionSeconds = millis % 1000;
+    const seconds = ((millis - millionSeconds) / 1000) % 60;
+    const minutes = ((millis - millionSeconds - seconds * 1000) / 60000) % 60;
+    const hours = (millis - millionSeconds - seconds * 1000 - minutes * 60000) / 360000;
+    return `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds
       .toString()
       .padStart(2, '0')},${millionSeconds.toString().padStart(3, '0')}`;
   };
 
-  const srtTimeToMills = (srtTime: string) => {
+  const srtTimeToMillis = (srtTime: string) => {
     const times = srtTime.split(/[:,]+/g);
     return (
       parseInt(times[0]) * 3600000 +
@@ -49,47 +51,101 @@
   }
 
   class SrtLine {
-    index: number;
-    markerIndex: number;
-    start: string;
-    end: string;
-    text: string;
-    type: SrtLineType;
-    constructor(index: number, start: string, end: string, type: SrtLineType) {
+    private index: number;
+    private markerIndex: number;
+    private start: number;
+    private end: number;
+    private text: string;
+    private type: SrtLineType;
+    constructor(index: number, type: SrtLineType) {
       this.index = index;
       this.markerIndex = -1;
-      this.start = start;
-      this.end = end;
+      this.start = -1;
+      this.end = -1;
       this.text = '';
       this.type = type;
     }
 
-    getEndTime() {
-      return srtTimeToMills(this.end);
+    getEnd() {
+      return this.end;
     }
 
-    getStartTime() {
-      return srtTimeToMills(this.start);
+    getEndText() {
+      return millisToSrtTime(this.end);
     }
 
-    setEndTime(mills: number) {
-      this.end = millsToSrtTime(mills);
+    getIndex() {
+      return this.index;
     }
 
-    setStartTime(mills: number) {
-      this.start = millsToSrtTime(mills);
+    getMarkerIndex() {
+      return this.markerIndex;
     }
 
-    shiftTime(diffTime: number) {
-      this.setStartTime(this.getStartTime() + diffTime);
-      this.setEndTime(this.getEndTime() + diffTime);
+    getStart() {
+      return this.start;
+    }
+
+    getStartText() {
+      return millisToSrtTime(this.start);
+    }
+
+    getText() {
+      return this.text;
+    }
+
+    getType() {
+      return this.type;
+    }
+
+    setEnd(millis: number): SrtLine {
+      this.end = millis;
+      return this;
+    }
+
+    setEndText(text: string): SrtLine {
+      this.end = srtTimeToMillis(text);
+      return this;
+    }
+
+    setIndex(index: number): SrtLine {
+      this.index = index;
+      return this;
+    }
+
+    setMarkerIndex(markerIndex: number): SrtLine {
+      this.markerIndex = markerIndex;
+      return this;
+    }
+
+    setStart(millis: number): SrtLine {
+      this.start = millis;
+      return this;
+    }
+
+    setStartText(text: string): SrtLine {
+      this.start = srtTimeToMillis(text);
+      return this;
+    }
+
+    setText(text: string): SrtLine {
+      this.text = text;
+      return this;
+    }
+
+    shiftTime(diffTime: number): SrtLine {
+      this.start += diffTime;
+      this.end += diffTime;
+      return this;
     }
 
     toClone() {
-      const clone = new SrtLine(this.index, this.start, this.end, this.type);
-      clone.markerIndex = this.markerIndex;
-      clone.text = this.text;
-      return clone;
+      return new SrtLine(this.index, this.type)
+        .setIndex(this.index)
+        .setMarkerIndex(this.markerIndex)
+        .setText(this.text)
+        .setEnd(this.end)
+        .setStart(this.start);
     }
 
     toString() {
@@ -109,10 +165,10 @@
     }
     setMarkerIndex(index: number) {
       if (this.left) {
-        this.left.markerIndex = index;
+        this.left.setMarkerIndex(index);
       }
       if (this.right) {
-        this.right.markerIndex = index;
+        this.right.setMarkerIndex(index);
       }
     }
   }
@@ -153,7 +209,7 @@
 
   function onClickLeftRenumber() {
     leftSrtLines.forEach((srtLine, index) => {
-      srtLine.index = index + 1;
+      srtLine.setIndex(index + 1);
     });
     leftSrtLines = leftSrtLines;
     isDirty = true;
@@ -161,16 +217,16 @@
 
   function onClickMarker(srtLine: SrtLine) {
     let markers = srtMarkers;
-    if (srtLine.markerIndex >= 0) {
-      const index = srtLine.markerIndex;
-      markers[index].clear();
-      markers = markers.filter((_marker, i) => i !== index);
+    if (srtLine.getMarkerIndex() >= 0) {
+      const markerIndex = srtLine.getMarkerIndex();
+      markers[markerIndex].clear();
+      markers = markers.filter((_marker, i) => i !== markerIndex);
     } else {
-      if (srtLine.type === SrtLineType.Left) {
+      if (srtLine.getType() === SrtLineType.Left) {
         if (
           !markers.find((marker, i) => {
             if (marker.left === null) {
-              srtLine.markerIndex = i;
+              srtLine.setMarkerIndex(i);
               marker.left = srtLine;
               return true;
             }
@@ -185,7 +241,7 @@
         if (
           !markers.find((marker, i) => {
             if (marker.right === null) {
-              srtLine.markerIndex = i;
+              srtLine.setMarkerIndex(i);
               marker.right = srtLine;
               return true;
             }
@@ -201,7 +257,7 @@
     markers
       .sort((a, b) => {
         if (a.left && b.left) {
-          return a.left.index - b.left.index;
+          return a.left.getStart() - b.left.getStart();
         }
         if (a.left) {
           return -1;
@@ -240,7 +296,7 @@
 
   function onClickRightRenumber() {
     rightSrtLines.forEach((srtLine, index) => {
-      srtLine.index = index + 1;
+      srtLine.setIndex(index + 1);
     });
     rightSrtLines = rightSrtLines;
     isDirty = true;
@@ -270,20 +326,28 @@
           ++i;
           const timeMatcher = lines[i].match(SRT_TIME_PATTERN);
           if (timeMatcher) {
-            srtLine = new SrtLine(parseInt(indexMatcher[0]), timeMatcher[1], timeMatcher[2], type);
+            srtLine = new SrtLine(parseInt(indexMatcher[0]), type)
+              .setStartText(timeMatcher[2])
+              .setEndText(timeMatcher[4]);
+            if (timeMatcher[1] === '-') {
+              srtLine.setStart(-1 * srtLine.getStart());
+            }
+            if (timeMatcher[3] === '-') {
+              srtLine.setEnd(-1 * srtLine.getEnd());
+            }
             srtLines.push(srtLine);
           }
         } else if (srtLine) {
-          srtLine.text += line + '\n';
+          srtLine.setText(srtLine.getText() + line + '\n');
         } else {
           console.warn(`Ignored line: ${line}`);
         }
       }
     }
     srtLines
-      .sort((a, b) => a.start.localeCompare(b.start))
+      .sort((a, b) => a.getStart() - b.getStart())
       .forEach((srtLine) => {
-        srtLine.text = srtLine.text.trimEnd();
+        srtLine.setText(srtLine.getText().trimEnd());
       });
     return srtLines;
   }
@@ -293,13 +357,13 @@
     const length = srtMarkers.length;
     if (length == 1) {
       if (type === SrtLineType.Left) {
-        const diffTime = srtMarkers[0].right!.getStartTime() - srtMarkers[0].left!.getStartTime();
+        const diffTime = srtMarkers[0].right!.getStart() - srtMarkers[0].left!.getStart();
         leftSrtLines.forEach((srtLine) => {
           srtLine.shiftTime(diffTime);
         });
         leftSrtLines = leftSrtLines;
       } else {
-        const diffTime = srtMarkers[0].left!.getStartTime() - srtMarkers[0].right!.getStartTime();
+        const diffTime = srtMarkers[0].left!.getStart() - srtMarkers[0].right!.getStart();
         rightSrtLines.forEach((srtLine) => {
           srtLine.shiftTime(diffTime);
         });
@@ -311,29 +375,29 @@
         for (let i = 0; i < length - 1; ++i) {
           velocities.push(
             new Velocity(
-              srtMarkers[i].right!.getStartTime() - srtMarkers[i].left!.getStartTime(),
-              srtMarkers[i + 1].right!.getStartTime() - srtMarkers[i + 1].left!.getStartTime(),
-              srtMarkers[i].left!.getStartTime(),
-              srtMarkers[i + 1].left!.getStartTime()
+              srtMarkers[i].right!.getStart() - srtMarkers[i].left!.getStart(),
+              srtMarkers[i + 1].right!.getStart() - srtMarkers[i + 1].left!.getStart(),
+              srtMarkers[i].left!.getStart(),
+              srtMarkers[i + 1].left!.getStart()
             )
           );
         }
         let velocityIndex = 0;
         leftSrtLines.forEach((srtLine) => {
-          const startTime = srtLine.getStartTime();
+          const start = srtLine.getStart();
           let velocity = velocities[velocityIndex];
-          while (startTime > velocity.timeTo && velocityIndex < velocities.length - 1) {
+          while (start > velocity.timeTo && velocityIndex < velocities.length - 1) {
             ++velocityIndex;
             velocity = velocities[velocityIndex];
           }
           if (
-            (velocityIndex == 0 && startTime < velocity.timeFrom) ||
-            (velocityIndex == velocities.length - 1 && startTime > velocity.timeTo) ||
-            (startTime >= velocity.timeFrom && startTime <= velocity.timeTo)
+            (velocityIndex == 0 && start < velocity.timeFrom) ||
+            (velocityIndex == velocities.length - 1 && start > velocity.timeTo) ||
+            (start >= velocity.timeFrom && start <= velocity.timeTo)
           ) {
             srtLine.shiftTime(
               velocity.diffFrom +
-                ((velocity.diffTo - velocity.diffFrom) * (startTime - velocity.timeFrom)) /
+                ((velocity.diffTo - velocity.diffFrom) * (start - velocity.timeFrom)) /
                   (velocity.timeTo - velocity.timeFrom)
             );
           } else {
@@ -346,29 +410,29 @@
         for (let i = 0; i < length - 1; ++i) {
           velocities.push(
             new Velocity(
-              srtMarkers[i].left!.getStartTime() - srtMarkers[i].right!.getStartTime(),
-              srtMarkers[i + 1].left!.getStartTime() - srtMarkers[i + 1].right!.getStartTime(),
-              srtMarkers[i].right!.getStartTime(),
-              srtMarkers[i + 1].right!.getStartTime()
+              srtMarkers[i].left!.getStart() - srtMarkers[i].right!.getStart(),
+              srtMarkers[i + 1].left!.getStart() - srtMarkers[i + 1].right!.getStart(),
+              srtMarkers[i].right!.getStart(),
+              srtMarkers[i + 1].right!.getStart()
             )
           );
         }
         let velocityIndex = 0;
         rightSrtLines.forEach((srtLine) => {
-          const startTime = srtLine.getStartTime();
+          const start = srtLine.getStart();
           let velocity = velocities[velocityIndex];
-          while (startTime > velocity.timeTo && velocityIndex < velocities.length - 1) {
+          while (start > velocity.timeTo && velocityIndex < velocities.length - 1) {
             ++velocityIndex;
             velocity = velocities[velocityIndex];
           }
           if (
-            (velocityIndex == 0 && startTime < velocity.timeFrom) ||
-            (velocityIndex == velocities.length - 1 && startTime > velocity.timeTo) ||
-            (startTime >= velocity.timeFrom && startTime <= velocity.timeTo)
+            (velocityIndex == 0 && start < velocity.timeFrom) ||
+            (velocityIndex == velocities.length - 1 && start > velocity.timeTo) ||
+            (start >= velocity.timeFrom && start <= velocity.timeTo)
           ) {
             srtLine.shiftTime(
               velocity.diffFrom +
-                ((velocity.diffTo - velocity.diffFrom) * (startTime - velocity.timeFrom)) /
+                ((velocity.diffTo - velocity.diffFrom) * (start - velocity.timeFrom)) /
                   (velocity.timeTo - velocity.timeFrom)
             );
           } else {
@@ -430,21 +494,21 @@
                   onClickMarker(srtLine);
                 }
               }}
-              class={srtLine.markerIndex >= 0 && srtLine.markerIndex < srtMarkers.length
+              class={srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length
                 ? 'data-table-row-marked'
-                : ''}
+                : 'data-table-row-unmarked'}
             >
               <td class="data-table-cell-index">
-                {#if srtLine.markerIndex >= 0 && srtLine.markerIndex < srtMarkers.length}
-                  <span class="badge-marker">{`${srtLine.markerIndex + 1}`}</span>
-                  {srtLine.index}
+                {#if srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length}
+                  <span class="badge-marker">{`${srtLine.getMarkerIndex() + 1}`}</span>
+                  {srtLine.getIndex()}
                 {:else}
-                  <pre>{srtLine.index}</pre>
+                  <pre>{srtLine.getIndex()}</pre>
                 {/if}
               </td>
-              <td class="data-table-cell-start"><pre>{srtLine.start}</pre></td>
-              <td class="data-table-cell-end"><pre>{srtLine.end}</pre></td>
-              <td class="data-table-cell-text"><pre>{srtLine.text}</pre></td>
+              <td class="data-table-cell-start"><pre>{srtLine.getStartText()}</pre></td>
+              <td class="data-table-cell-end"><pre>{srtLine.getEndText()}</pre></td>
+              <td class="data-table-cell-text"><pre>{srtLine.getText()}</pre></td>
             </tr>
           {/each}
         </tbody>
@@ -470,21 +534,21 @@
                   onClickMarker(srtLine);
                 }
               }}
-              class={srtLine.markerIndex >= 0 && srtLine.markerIndex < srtMarkers.length
+              class={srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length
                 ? 'data-table-row-marked'
-                : ''}
+                : 'data-table-row-unmarked'}
             >
               <td class="data-table-cell-index">
-                {#if srtLine.markerIndex >= 0 && srtLine.markerIndex < srtMarkers.length}
-                  <span class="badge-marker">{`${srtLine.markerIndex + 1}`}</span>
-                  {srtLine.index}
+                {#if srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length}
+                  <span class="badge-marker">{`${srtLine.getMarkerIndex() + 1}`}</span>
+                  {srtLine.getIndex()}
                 {:else}
-                  <pre>{srtLine.index}</pre>
+                  <pre>{srtLine.getIndex()}</pre>
                 {/if}
               </td>
-              <td class="data-table-cell-start"><pre>{srtLine.start}</pre></td>
-              <td class="data-table-cell-end"><pre>{srtLine.end}</pre></td>
-              <td class="data-table-cell-text"><pre>{srtLine.text}</pre></td>
+              <td class="data-table-cell-start"><pre>{srtLine.getStartText()}</pre></td>
+              <td class="data-table-cell-end"><pre>{srtLine.getEndText()}</pre></td>
+              <td class="data-table-cell-text"><pre>{srtLine.getText()}</pre></td>
             </tr>
           {/each}
         </tbody>
@@ -545,6 +609,10 @@
   }
   .data-table-row-marked {
     background-color: #eeeeff;
+  }
+  .data-table-row-unmarked:hover,
+  .data-table-row-marked:hover {
+    background-color: #eeffee;
   }
   pre {
     padding: 0px;
