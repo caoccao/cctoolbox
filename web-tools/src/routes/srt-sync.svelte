@@ -84,6 +84,13 @@
       this.setStartTime(this.getStartTime() + diffTime);
       this.setEndTime(this.getEndTime() + diffTime);
     }
+
+    toClone() {
+      const clone = new SrtLine(this.index, this.start, this.end, this.type);
+      clone.markerIndex = this.markerIndex;
+      clone.text = this.text;
+      return clone;
+    }
   }
 
   class SrtMarker {
@@ -120,6 +127,7 @@
     }
   }
 
+  let isDirty = false;
   let srtMarkers: SrtMarker[] = [];
 
   let originalLeftSrtLines: SrtLine[] = [];
@@ -131,8 +139,16 @@
   function onClickLeftPaste() {
     navigator.clipboard.readText().then((text) => {
       leftSrtLines = srtTextToSrtLines(text, SrtLineType.Left);
-      originalLeftSrtLines = structuredClone(leftSrtLines);
+      originalLeftSrtLines = leftSrtLines.map((srtLine) => srtLine.toClone());
     });
+  }
+
+  function onClickLeftRenumber() {
+    leftSrtLines.forEach((srtLine, index) => {
+      srtLine.index = index + 1;
+    });
+    leftSrtLines = leftSrtLines;
+    isDirty = true;
   }
 
   function onClickMarker(srtLine: SrtLine) {
@@ -193,27 +209,39 @@
     srtMarkers = markers;
     leftSrtLines = leftSrtLines;
     rightSrtLines = rightSrtLines;
+    isDirty = true;
   }
 
   function onClickReset() {
     srtMarkers = [];
-    leftSrtLines = structuredClone(originalLeftSrtLines);
-    rightSrtLines = structuredClone(originalRightSrtLines);
+    leftSrtLines = originalLeftSrtLines.map((srtLine) => srtLine.toClone());
+    rightSrtLines = originalRightSrtLines.map((srtLine) => srtLine.toClone());
+    isDirty = false;
   }
 
   function onClickRightPaste() {
     navigator.clipboard.readText().then((text) => {
       rightSrtLines = srtTextToSrtLines(text, SrtLineType.Right);
-      originalRightSrtLines = structuredClone(rightSrtLines);
+      originalRightSrtLines = rightSrtLines.map((srtLine) => srtLine.toClone());
     });
+  }
+
+  function onClickRightRenumber() {
+    rightSrtLines.forEach((srtLine, index) => {
+      srtLine.index = index + 1;
+    });
+    rightSrtLines = rightSrtLines;
+    isDirty = true;
   }
 
   function onClickSyncToLeft() {
     sync(SrtLineType.Left);
+    isDirty = true;
   }
 
   function onClickSyncToRight() {
     sync(SrtLineType.Right);
+    isDirty = true;
   }
 
   function srtTextToSrtLines(text: string | null, type: SrtLineType): SrtLine[] {
@@ -240,13 +268,16 @@
         }
       }
     }
-    srtLines.forEach((srtLine) => {
-      srtLine.text = srtLine.text.trimEnd();
-    });
+    srtLines
+      .sort((a, b) => a.start.localeCompare(b.start))
+      .forEach((srtLine) => {
+        srtLine.text = srtLine.text.trimEnd();
+      });
     return srtLines;
   }
 
   function sync(type: SrtLineType) {
+    console.log(srtMarkers);
     const length = srtMarkers.length;
     if (length == 1) {
       if (type === SrtLineType.Left) {
@@ -343,6 +374,9 @@
     <Group position="center" spacing="md">
       <Button size="sm" on:click={onClickLeftPaste}>Paste</Button>
       <Button size="sm">Copy</Button>
+      <Button size="sm" on:click={onClickLeftRenumber} disabled={leftSrtLines.length == 0}
+        >Renumber</Button
+      >
       <Button
         size="sm"
         on:click={onClickSyncToRight}
@@ -354,6 +388,9 @@
     <Group position="center" spacing="md">
       <Button size="sm" on:click={onClickRightPaste}>Paste</Button>
       <Button size="sm">Copy</Button>
+      <Button size="sm" on:click={onClickRightRenumber} disabled={rightSrtLines.length == 0}
+        >Renumber</Button
+      >
       <Button
         size="sm"
         on:click={onClickSyncToLeft}
@@ -453,9 +490,7 @@
   {/if}
   <Grid.Col span={12}>
     <Group position="center" spacing="md">
-      <Button size="sm" variant="outline" on:click={onClickReset} disabled={srtMarkers.length == 0}>
-        Reset
-      </Button>
+      <Button size="sm" variant="outline" on:click={onClickReset} disabled={!isDirty}>Reset</Button>
     </Group>
   </Grid.Col>
 </Grid>
