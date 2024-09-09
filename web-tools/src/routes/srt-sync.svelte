@@ -15,7 +15,8 @@
     *   See the License for the specific language governing permissions and
     *   limitations under the License.
     */
-  import { Button, Grid, Group, Title } from '@svelteuidev/core';
+  import { Button, Checkbox, Grid, Group, TextInput, Title } from '@svelteuidev/core';
+  import type { ChangeEventHandler } from 'svelte/elements';
 
   const SRT_LINE_SEPARATOR_PATTERN = /[\r\n]/;
   const SRT_INDEX_PATTERN = /^\s*\d+\s*$/;
@@ -133,6 +134,11 @@
       return this;
     }
 
+    setType(type: SrtLineType): SrtLine {
+      this.type = type;
+      return this;
+    }
+
     shiftTime(diffTime: number): SrtLine {
       this.start += diffTime;
       this.end += diffTime;
@@ -149,7 +155,7 @@
     }
 
     toString() {
-      return `${this.index}\n${this.start} --> ${this.end}\n${this.text}\n`;
+      return `${this.index}\n${this.getStartText()} --> ${this.getEndText()}\n${this.text}\n`;
     }
   }
 
@@ -188,6 +194,7 @@
   }
 
   let isDirty = false;
+  let isSingleFileMode = true;
   let srtMarkers: SrtMarker[] = [];
 
   let originalLeftSrtLines: SrtLine[] = [];
@@ -195,6 +202,18 @@
 
   let leftSrtLines: SrtLine[] = [];
   let rightSrtLines: SrtLine[] = [];
+
+  function onChangeStart(event: ChangeEventHandler<HTMLInputElement>, srtLine: SrtLine) {
+    try {
+      srtMarkers[srtLine.getMarkerIndex()].right = new SrtLine(
+        srtLine.getIndex(),
+        SrtLineType.Right
+      ).setStartText(event.target.value);
+      isDirty = true;
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   function onClickLeftCopy() {
     navigator.clipboard.writeText(leftSrtLines.map((srtLine) => srtLine.toString()).join('\n'));
@@ -279,7 +298,11 @@
   function onClickReset() {
     srtMarkers = [];
     leftSrtLines = originalLeftSrtLines.map((srtLine) => srtLine.toClone());
-    rightSrtLines = originalRightSrtLines.map((srtLine) => srtLine.toClone());
+    if (isSingleFileMode) {
+      rightSrtLines = [];
+    } else {
+      rightSrtLines = originalRightSrtLines.map((srtLine) => srtLine.toClone());
+    }
     isDirty = false;
   }
 
@@ -300,6 +323,12 @@
     });
     rightSrtLines = rightSrtLines;
     isDirty = true;
+  }
+
+  function onClickSingleFileMode() {
+    isSingleFileMode = !isSingleFileMode;
+    rightSrtLines = [];
+    srtMarkers = [];
   }
 
   function onClickSyncToLeft() {
@@ -353,8 +382,10 @@
   }
 
   function sync(type: SrtLineType) {
-    console.log(srtMarkers);
     const length = srtMarkers.length;
+    if (isSingleFileMode) {
+      rightSrtLines = leftSrtLines.map((srtLine) => srtLine.toClone().setType(SrtLineType.Right));
+    }
     if (length == 1) {
       if (type === SrtLineType.Left) {
         const diffTime = srtMarkers[0].right!.getStart() - srtMarkers[0].left!.getStart();
@@ -363,7 +394,9 @@
         });
         leftSrtLines = leftSrtLines;
       } else {
-        const diffTime = srtMarkers[0].left!.getStart() - srtMarkers[0].right!.getStart();
+        const diffTime = isSingleFileMode
+          ? srtMarkers[0].right!.getStart() - srtMarkers[0].left!.getStart()
+          : srtMarkers[0].left!.getStart() - srtMarkers[0].right!.getStart();
         rightSrtLines.forEach((srtLine) => {
           srtLine.shiftTime(diffTime);
         });
@@ -409,12 +442,19 @@
         const velocities: Velocity[] = [];
         for (let i = 0; i < length - 1; ++i) {
           velocities.push(
-            new Velocity(
-              srtMarkers[i].left!.getStart() - srtMarkers[i].right!.getStart(),
-              srtMarkers[i + 1].left!.getStart() - srtMarkers[i + 1].right!.getStart(),
-              srtMarkers[i].right!.getStart(),
-              srtMarkers[i + 1].right!.getStart()
-            )
+            isSingleFileMode
+              ? new Velocity(
+                  srtMarkers[i].right!.getStart() - srtMarkers[i].left!.getStart(),
+                  srtMarkers[i + 1].right!.getStart() - srtMarkers[i + 1].left!.getStart(),
+                  srtMarkers[i].left!.getStart(),
+                  srtMarkers[i + 1].left!.getStart()
+                )
+              : new Velocity(
+                  srtMarkers[i].left!.getStart() - srtMarkers[i].right!.getStart(),
+                  srtMarkers[i + 1].left!.getStart() - srtMarkers[i + 1].right!.getStart(),
+                  srtMarkers[i].right!.getStart(),
+                  srtMarkers[i + 1].right!.getStart()
+                )
           );
         }
         let velocityIndex = 0;
@@ -450,29 +490,30 @@
     <Group position="center" spacing="md">
       <Button size="sm" on:click={onClickLeftPaste}>Paste</Button>
       <Button size="sm" on:click={onClickLeftCopy} disabled={leftSrtLines.length == 0}>Copy</Button>
-      <Button size="sm" on:click={onClickLeftRenumber} disabled={leftSrtLines.length == 0}
-        >Renumber</Button
-      >
-      <Button
-        size="sm"
-        on:click={onClickSyncToRight}
-        disabled={leftSrtLines.length == 0 || rightSrtLines.length == 0}>Sync ⇨</Button
-      >
+      <Button size="sm" on:click={onClickLeftRenumber} disabled={leftSrtLines.length == 0}>
+        Renumber
+      </Button>
+      <Button size="sm" on:click={onClickSyncToRight} disabled={srtMarkers.length == 0}>
+        Sync ⇨
+      </Button>
     </Group>
   </Grid.Col>
   <Grid.Col span={6}>
     <Group position="center" spacing="md">
-      <Button size="sm" on:click={onClickRightPaste}>Paste</Button>
-      <Button size="sm" on:click={onClickRightCopy} disabled={leftSrtLines.length == 0}>Copy</Button
-      >
-      <Button size="sm" on:click={onClickRightRenumber} disabled={rightSrtLines.length == 0}
-        >Renumber</Button
-      >
-      <Button
-        size="sm"
-        on:click={onClickSyncToLeft}
-        disabled={leftSrtLines.length == 0 || rightSrtLines.length == 0}>⇦ Sync</Button
-      >
+      {#if !isSingleFileMode}
+        <Button size="sm" on:click={onClickRightPaste}>Paste</Button>
+      {/if}
+      <Button size="sm" on:click={onClickRightCopy} disabled={rightSrtLines.length == 0}>
+        Copy
+      </Button>
+      {#if !isSingleFileMode}
+        <Button size="sm" on:click={onClickRightRenumber} disabled={rightSrtLines.length == 0}>
+          Renumber
+        </Button>
+        <Button size="sm" on:click={onClickSyncToLeft} disabled={srtMarkers.length == 0}>
+          ⇦ Sync
+        </Button>
+      {/if}
     </Group>
   </Grid.Col>
   <Grid.Col span={6}>
@@ -501,14 +542,27 @@
               <td class="data-table-cell-index">
                 {#if srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length}
                   <span class="badge-marker">{`${srtLine.getMarkerIndex() + 1}`}</span>
-                  {srtLine.getIndex()}
+                {/if}
+                {srtLine.getIndex()}
+              </td>
+              <td class="data-table-cell-start">
+                {#if srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length}
+                  <TextInput
+                    size="xs"
+                    value={srtMarkers[srtLine.getMarkerIndex()].right
+                      ? srtMarkers[srtLine.getMarkerIndex()].right?.getStartText()
+                      : srtLine.getStartText()}
+                    style="text-align: center; font-family: 'Courier New', Courier, monospace;"
+                    on:change={(event) => {
+                      onChangeStart(event, srtLine);
+                    }}
+                  />
                 {:else}
-                  <pre>{srtLine.getIndex()}</pre>
+                  {srtLine.getStartText()}
                 {/if}
               </td>
-              <td class="data-table-cell-start"><pre>{srtLine.getStartText()}</pre></td>
-              <td class="data-table-cell-end"><pre>{srtLine.getEndText()}</pre></td>
-              <td class="data-table-cell-text"><pre>{srtLine.getText()}</pre></td>
+              <td class="data-table-cell-end">{srtLine.getEndText()}</td>
+              <td class="data-table-cell-text">{srtLine.getText()}</td>
             </tr>
           {/each}
         </tbody>
@@ -541,14 +595,12 @@
               <td class="data-table-cell-index">
                 {#if srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length}
                   <span class="badge-marker">{`${srtLine.getMarkerIndex() + 1}`}</span>
-                  {srtLine.getIndex()}
-                {:else}
-                  <pre>{srtLine.getIndex()}</pre>
                 {/if}
+                {srtLine.getIndex()}
               </td>
-              <td class="data-table-cell-start"><pre>{srtLine.getStartText()}</pre></td>
-              <td class="data-table-cell-end"><pre>{srtLine.getEndText()}</pre></td>
-              <td class="data-table-cell-text"><pre>{srtLine.getText()}</pre></td>
+              <td class="data-table-cell-start">{srtLine.getStartText()}</td>
+              <td class="data-table-cell-end">{srtLine.getEndText()}</td>
+              <td class="data-table-cell-text">{srtLine.getText()}</td>
             </tr>
           {/each}
         </tbody>
@@ -566,7 +618,12 @@
     </Grid.Col>
   {/if}
   <Grid.Col span={12}>
-    <Group position="center" spacing="md">
+    <Group position="center" spacing="lg">
+      <Checkbox
+        label="Single File Mode"
+        checked={isSingleFileMode}
+        on:click={onClickSingleFileMode}
+      />
       <Button size="sm" variant="outline" on:click={onClickReset} disabled={!isDirty}>Reset</Button>
     </Group>
   </Grid.Col>
@@ -597,12 +654,14 @@
     max-width: 4em;
   }
   .data-table-header-start,
-  .data-table-header-end,
+  .data-table-header-end {
+    text-align: center;
+  }
   .data-table-cell-start,
   .data-table-cell-end {
     text-align: center;
-    width: 7em;
-    max-width: 7em;
+    font-size: 14px;
+    font-family: 'Courier New', Courier, monospace;
   }
   .data-table-header-text {
     text-align: left;
@@ -613,11 +672,6 @@
   .data-table-row-unmarked:hover,
   .data-table-row-marked:hover {
     background-color: #eeffee;
-  }
-  pre {
-    padding: 0px;
-    margin: 0px;
-    font-family: Arial, Helvetica, sans-serif;
   }
   .badge-marker {
     position: relative;
