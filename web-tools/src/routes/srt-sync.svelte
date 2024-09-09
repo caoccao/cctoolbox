@@ -91,6 +91,10 @@
       clone.text = this.text;
       return clone;
     }
+
+    toString() {
+      return `${this.index}\n${this.start} --> ${this.end}\n${this.text}\n`;
+    }
   }
 
   class SrtMarker {
@@ -135,6 +139,10 @@
 
   let leftSrtLines: SrtLine[] = [];
   let rightSrtLines: SrtLine[] = [];
+
+  function onClickLeftCopy() {
+    navigator.clipboard.writeText(leftSrtLines.map((srtLine) => srtLine.toString()).join('\n'));
+  }
 
   function onClickLeftPaste() {
     navigator.clipboard.readText().then((text) => {
@@ -217,6 +225,10 @@
     leftSrtLines = originalLeftSrtLines.map((srtLine) => srtLine.toClone());
     rightSrtLines = originalRightSrtLines.map((srtLine) => srtLine.toClone());
     isDirty = false;
+  }
+
+  function onClickRightCopy() {
+    navigator.clipboard.writeText(rightSrtLines.map((srtLine) => srtLine.toString()).join('\n'));
   }
 
   function onClickRightPaste() {
@@ -373,7 +385,7 @@
   <Grid.Col span={6}>
     <Group position="center" spacing="md">
       <Button size="sm" on:click={onClickLeftPaste}>Paste</Button>
-      <Button size="sm">Copy</Button>
+      <Button size="sm" on:click={onClickLeftCopy} disabled={leftSrtLines.length == 0}>Copy</Button>
       <Button size="sm" on:click={onClickLeftRenumber} disabled={leftSrtLines.length == 0}
         >Renumber</Button
       >
@@ -387,7 +399,8 @@
   <Grid.Col span={6}>
     <Group position="center" spacing="md">
       <Button size="sm" on:click={onClickRightPaste}>Paste</Button>
-      <Button size="sm">Copy</Button>
+      <Button size="sm" on:click={onClickRightCopy} disabled={leftSrtLines.length == 0}>Copy</Button
+      >
       <Button size="sm" on:click={onClickRightRenumber} disabled={rightSrtLines.length == 0}
         >Renumber</Button
       >
