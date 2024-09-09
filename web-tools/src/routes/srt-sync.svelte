@@ -546,7 +546,7 @@
                 {srtLine.getIndex()}
               </td>
               <td class="data-table-cell-start">
-                {#if srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length}
+                {#if isSingleFileMode && srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length}
                   <TextInput
                     size="xs"
                     value={srtMarkers[srtLine.getMarkerIndex()].right
