@@ -23,7 +23,7 @@
   const SRT_TIME_PATTERN =
     /^\s*(\-?)(\d{2}:\d{2}:\d{2},\d{3})\s*\-{2}\>\s*(\-?)(\d{2}:\d{2}:\d{2},\d{3})\s*$/;
 
-  const millisToSrtTime = (millis: number) => {
+  const millisToSrtTime = (millis: number, pointChar: string = ',') => {
     millis = Math.round(millis);
     const sign = millis < 0 ? '-' : '';
     millis = Math.abs(millis);
@@ -33,11 +33,11 @@
     const hours = (millis - millionSeconds - seconds * 1000 - minutes * 60000) / 3600000;
     return `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds
       .toString()
-      .padStart(2, '0')},${millionSeconds.toString().padStart(3, '0')}`;
+      .padStart(2, '0')}${pointChar}${millionSeconds.toString().padStart(3, '0')}`;
   };
 
   const srtTimeToMillis = (srtTime: string) => {
-    const times = srtTime.split(/[:,]+/g);
+    const times = srtTime.split(/[:,\.]+/g);
     return (
       parseInt(times[0]) * 3600000 +
       parseInt(times[1]) * 60000 +
@@ -71,8 +71,8 @@
       return this.end;
     }
 
-    getEndText() {
-      return millisToSrtTime(this.end);
+    getEndText(pointChar: string = ',') {
+      return millisToSrtTime(this.end, pointChar);
     }
 
     getIndex() {
@@ -87,8 +87,8 @@
       return this.start;
     }
 
-    getStartText() {
-      return millisToSrtTime(this.start);
+    getStartText(pointChar: string = ',') {
+      return millisToSrtTime(this.start, pointChar);
     }
 
     getText() {
@@ -203,12 +203,12 @@
   let leftSrtLines: SrtLine[] = [];
   let rightSrtLines: SrtLine[] = [];
 
-  function onChangeStart(event: ChangeEventHandler<HTMLInputElement>, srtLine: SrtLine) {
+  function onChangeStart(event: CustomEvent<HTMLInputElement>, srtLine: SrtLine) {
     try {
       srtMarkers[srtLine.getMarkerIndex()].right = new SrtLine(
         srtLine.getIndex(),
         SrtLineType.Right
-      ).setStartText(event.target.value);
+      ).setStartText((event.target! as HTMLInputElement).value);
       isDirty = true;
     } catch (e) {
       console.error(e);
@@ -550,18 +550,18 @@
                   <TextInput
                     size="xs"
                     value={srtMarkers[srtLine.getMarkerIndex()].right
-                      ? srtMarkers[srtLine.getMarkerIndex()].right?.getStartText()
-                      : srtLine.getStartText()}
+                      ? srtMarkers[srtLine.getMarkerIndex()].right?.getStartText('.')
+                      : srtLine.getStartText('.')}
                     style="text-align: center; font-family: 'Courier New', Courier, monospace;"
                     on:change={(event) => {
                       onChangeStart(event, srtLine);
                     }}
                   />
                 {:else}
-                  {srtLine.getStartText()}
+                  {srtLine.getStartText('.')}
                 {/if}
               </td>
-              <td class="data-table-cell-end">{srtLine.getEndText()}</td>
+              <td class="data-table-cell-end">{srtLine.getEndText('.')}</td>
               <td class="data-table-cell-text">{srtLine.getText()}</td>
             </tr>
           {/each}
@@ -598,8 +598,8 @@
                 {/if}
                 {srtLine.getIndex()}
               </td>
-              <td class="data-table-cell-start">{srtLine.getStartText()}</td>
-              <td class="data-table-cell-end">{srtLine.getEndText()}</td>
+              <td class="data-table-cell-start">{srtLine.getStartText('.')}</td>
+              <td class="data-table-cell-end">{srtLine.getEndText('.')}</td>
               <td class="data-table-cell-text">{srtLine.getText()}</td>
             </tr>
           {/each}
