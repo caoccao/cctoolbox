@@ -223,6 +223,11 @@
     navigator.clipboard.readText().then((text) => {
       leftSrtLines = srtTextToSrtLines(text, SrtLineType.Left);
       originalLeftSrtLines = leftSrtLines.map((srtLine) => srtLine.toClone());
+      if (isSingleFileMode) {
+        rightSrtLines = [];
+        originalRightSrtLines = [];
+      }
+      srtMarkers = [];
     });
   }
 
@@ -314,6 +319,7 @@
     navigator.clipboard.readText().then((text) => {
       rightSrtLines = srtTextToSrtLines(text, SrtLineType.Right);
       originalRightSrtLines = rightSrtLines.map((srtLine) => srtLine.toClone());
+      srtMarkers = [];
     });
   }
 
