@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.34"
-clap = { version = "4.5.1", features = ["derive"] }
+clap = { version = "4.5.17", features = ["derive"] }
 dateparser = "0.2.1"
 debug_print = "1.0.0"
 filetime = "0.2.23"
