@@ -72,15 +72,18 @@ fn build_ui(args: &Args) -> impl druid::Widget<()> {
     args.messages.clone()
   };
   let mut flex = druid::widget::Flex::column().with_spacer(5.0);
-  messages.iter().for_each(|message| {
-    let label = druid::widget::Label::new(message.to_owned())
-      .with_text_size(20.0)
-      .with_line_break_mode(druid::widget::LineBreaking::WordWrap)
-      .padding(4.0)
-      .border(druid::Color::grey(0.6), 1.0)
-      .rounded(5.0);
-    flex.add_child(label);
-  });
+  messages
+    .iter()
+    .filter(|message| !message.is_empty())
+    .for_each(|message| {
+      let label = druid::widget::Label::new(message.to_owned())
+        .with_text_size(20.0)
+        .with_line_break_mode(druid::widget::LineBreaking::WordWrap)
+        .padding(4.0)
+        .border(druid::Color::grey(0.6), 1.0)
+        .rounded(5.0);
+      flex.add_child(label);
+    });
   let button_close = druid::widget::Button::new("Close")
     .padding(10.0)
     .on_click(|_, _: &mut (), _| druid::Application::global().quit());
