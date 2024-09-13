@@ -19,7 +19,8 @@ Why rewrite the tools in Rust? Isn't the Git for Windows good enough? The proble
 
 | Name | Description |
 | ---- | ----------- |
-| Grep It | Apply JavaScript regular expression to input text and template for code generation. |
+| [Grep It](https://www.caoccao.com/cctoolbox/#grep-it) | Apply JavaScript regular expression to input text and template for code generation. |
+| [Srt Sync](https://www.caoccao.com/cctoolbox/#srt-sync) | Sync timeline of one or two subtitle files. |
 
 ## Other Tools
 
@@ -27,6 +28,7 @@ Why rewrite the tools in Rust? Isn't the Git for Windows good enough? The proble
 | ---- | ----------- |
 | [Hide Volume OSD](hide-volume-osd) | Hide Volume OSD is a tool for hiding/showing the volume OSD. |
 | [PKU Check](pku-check) | PKU Check is a console application that checks the availability of Linux kernel feature [Memory Protection Keys](https://www.kernel.org/doc/html/next/core-api/protection-keys.html) on a certain Linux distribution. |
+| [Simple Message Box](simple-message-box) | A cross-platform message box that shows arbitrary messages in GUI for alerting in console automation. |
 
 ## License
 

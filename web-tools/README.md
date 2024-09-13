@@ -4,5 +4,5 @@
 
 | Name | Description |
 | ---- | ----------- |
-| Grep It | Apply JavaScript regular expression to input text and template for code generation. |
-| Srt Sync | Sync timeline of two subtitle files. |
+| [Grep It](https://www.caoccao.com/cctoolbox/#grep-it) | Apply JavaScript regular expression to input text and template for code generation. |
+| [Srt Sync](https://www.caoccao.com/cctoolbox/#srt-sync) | Sync timeline of one or two subtitle files. |
