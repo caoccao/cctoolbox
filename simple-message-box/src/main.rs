@@ -81,6 +81,10 @@ fn build_ui(args: &Args) -> impl druid::Widget<()> {
       .rounded(5.0);
     flex.add_child(label);
   });
+  let button_close = druid::widget::Button::new("Close")
+    .padding(10.0)
+    .on_click(|_, _: &mut (), _| druid::Application::global().quit());
+  flex.add_child(button_close);
   flex.align_vertical(druid::UnitPoint::CENTER)
 }
 
