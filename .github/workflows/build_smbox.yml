@@ -37,7 +37,7 @@ jobs:
             os: linux
             arch: x86_64
             ext: 
-            command: sudo apt-get install -y libpango-1.0-0
+            command: sudo apt-get install -y libgtk-4-dev
           - image: macos-13
             os: macos
             arch: x86_64
