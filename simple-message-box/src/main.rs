@@ -15,8 +15,6 @@
 * limitations under the License.
 */
 
-#![windows_subsystem = "windows"]
-
 use clap::Parser;
 use druid::WidgetExt;
 use std::time::{Duration, SystemTime};
@@ -50,9 +48,13 @@ struct Args {
   #[arg(short, long, default_value_t = APP_FULL_NAME.to_string())]
   title: String,
 
-  /// messages to be shown
+  /// Messages to be shown
   #[arg(name = "messages")]
   messages: Vec<String>,
+
+  /// Verbose
+  #[arg(short, long, name = "verbose", default_value_t = false)]
+  verbose: bool,
 }
 
 struct AutoCloseButton {
@@ -135,10 +137,11 @@ fn main() {
     .set_position(get_position(&args))
     .title(args.title)
     .window_size((args.width as f64, args.height as f64));
-  druid::AppLauncher::with_window(window)
-    .log_to_console()
-    .launch(0)
-    .expect("Failed to launch application");
+  let mut app_launcher = druid::AppLauncher::with_window(window);
+  if args.verbose {
+    app_launcher = app_launcher.log_to_console();
+  }
+  app_launcher.launch(0).expect("Failed to launch application");
 }
 
 fn build_ui(args: &Args) -> impl druid::Widget<i64> {
