@@ -15,13 +15,17 @@
 * limitations under the License.
 */
 
+#![windows_subsystem = "windows"]
+
 use clap::Parser;
 use druid::WidgetExt;
+use std::time::{Duration, SystemTime};
 
 const APP_SHORT_NAME: &str = "smbox";
 const APP_FULL_NAME: &str = "Simple Message Box";
 const APP_VERSION: &str = "0.1.0";
 const DEFAULT_MESSAGE: &str = "Hello from Simple Message Box!";
+const TIMER_INTERVAL: Duration = Duration::from_millis(100);
 
 #[derive(Parser, Debug)]
 #[command(name = APP_SHORT_NAME)]
@@ -51,6 +55,78 @@ struct Args {
   messages: Vec<String>,
 }
 
+struct AutoCloseButton {
+  button: druid::WidgetPod<i64, druid::widget::Button<i64>>,
+  start_time: SystemTime,
+  timer_token: druid::TimerToken,
+  timeout: u64,
+}
+
+impl AutoCloseButton {
+  fn new(timeout: u64) -> Self {
+    Self {
+      button: druid::WidgetPod::new(druid::widget::Button::dynamic(|seconds, _| match *seconds {
+        2.. => format!("Close in {} seconds", seconds),
+        1 => "Close in 1 second".to_string(),
+        0 => "Close now".to_string(),
+        _ => "Close".to_string(),
+      })),
+      start_time: SystemTime::now(),
+      timer_token: druid::TimerToken::INVALID,
+      timeout,
+    }
+  }
+}
+
+impl druid::widget::Widget<i64> for AutoCloseButton {
+  fn event(&mut self, ctx: &mut druid::EventCtx, event: &druid::Event, data: &mut i64, env: &druid::Env) {
+    match event {
+      druid::Event::WindowConnected => self.timer_token = ctx.request_timer(TIMER_INTERVAL),
+      druid::Event::Timer(timer_token) => {
+        if *timer_token == self.timer_token {
+          if self.timeout > 0 {
+            if let Ok(duration) = SystemTime::now().duration_since(self.start_time) {
+              let millis = self.timeout as i64 - duration.as_millis() as i64;
+              if millis <= 0 {
+                *data = 0;
+                ctx.submit_command(druid::commands::CLOSE_ALL_WINDOWS);
+              } else {
+                *data = millis / 1000;
+              }
+            }
+          }
+          ctx.request_update();
+          self.timer_token = ctx.request_timer(TIMER_INTERVAL);
+        }
+      }
+      _ => (),
+    }
+    self.button.event(ctx, event, data, env);
+  }
+
+  fn lifecycle(&mut self, ctx: &mut druid::LifeCycleCtx, event: &druid::LifeCycle, data: &i64, env: &druid::Env) {
+    self.button.lifecycle(ctx, event, data, env);
+  }
+
+  fn layout(
+    &mut self,
+    ctx: &mut druid::LayoutCtx,
+    bc: &druid::BoxConstraints,
+    data: &i64,
+    env: &druid::Env,
+  ) -> druid::Size {
+    self.button.layout(ctx, bc, data, env)
+  }
+
+  fn paint(&mut self, ctx: &mut druid::PaintCtx, data: &i64, env: &druid::Env) {
+    self.button.paint(ctx, data, env);
+  }
+
+  fn update(&mut self, ctx: &mut druid::UpdateCtx, _old_data: &i64, data: &i64, env: &druid::Env) {
+    self.button.update(ctx, data, env);
+  }
+}
+
 fn main() {
   let args = Args::parse();
   let window = druid::WindowDesc::new(build_ui(&args))
@@ -61,11 +137,11 @@ fn main() {
     .window_size((args.width as f64, args.height as f64));
   druid::AppLauncher::with_window(window)
     .log_to_console()
-    .launch(())
+    .launch(0)
     .expect("Failed to launch application");
 }
 
-fn build_ui(args: &Args) -> impl druid::Widget<()> {
+fn build_ui(args: &Args) -> impl druid::Widget<i64> {
   let messages = if args.messages.is_empty() {
     vec![DEFAULT_MESSAGE.to_string()]
   } else {
@@ -84,9 +160,9 @@ fn build_ui(args: &Args) -> impl druid::Widget<()> {
         .rounded(5.0);
       flex.add_child(label);
     });
-  let button_close = druid::widget::Button::new("Close")
+  let button_close = AutoCloseButton::new(args.timeout)
     .padding(10.0)
-    .on_click(|_, _: &mut (), _| druid::Application::global().quit());
+    .on_click(|ctx, _: &mut i64, _| ctx.submit_command(druid::commands::CLOSE_ALL_WINDOWS));
   flex.add_child(button_close);
   flex.align_vertical(druid::UnitPoint::CENTER)
 }
