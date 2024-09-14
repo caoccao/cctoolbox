@@ -32,18 +32,22 @@ jobs:
             os: windows
             arch: x86_64
             ext: .exe
+            command:
           - image: ubuntu-latest
             os: linux
             arch: x86_64
             ext: 
+            command: sudo apt-get install -y libpango-1.0-0
           - image: macos-13
             os: macos
             arch: x86_64
             ext: 
+            command:
           - image: macos-14
             os: macos
             arch: arm64
             ext: 
+            command:
 
     name: Build for ${{ matrix.os }} ${{ matrix.arch }}
     runs-on: ${{ matrix.image }}
@@ -65,6 +69,7 @@ jobs:
     - name: Build Binary
       run: |
         cd simple-message-box
+        ${{ matrix.command }}
         cargo build --release
 
     - name: Upload Artifact
