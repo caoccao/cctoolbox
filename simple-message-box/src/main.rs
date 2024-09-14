@@ -91,7 +91,7 @@ impl druid::widget::Widget<i64> for AutoCloseButton {
               let millis = self.timeout as i64 - duration.as_millis() as i64;
               if millis <= 0 {
                 *data = 0;
-                ctx.submit_command(druid::commands::CLOSE_ALL_WINDOWS);
+                druid::Application::global().quit();
               } else {
                 *data = millis / 1000;
               }
@@ -165,7 +165,7 @@ fn build_ui(args: &Args) -> impl druid::Widget<i64> {
     });
   let button_close = AutoCloseButton::new(args.timeout)
     .padding(10.0)
-    .on_click(|ctx, _: &mut i64, _| ctx.submit_command(druid::commands::CLOSE_ALL_WINDOWS));
+    .on_click(|_ctx, _: &mut i64, _| druid::Application::global().quit());
   flex.add_child(button_close);
   flex.align_vertical(druid::UnitPoint::CENTER)
 }
