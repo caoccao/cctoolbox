@@ -44,7 +44,7 @@ struct Args {
   #[arg(long, default_value_t = 0)]
   timeout: u64,
 
-  /// Auto-close the message box after timeout (milliseconds)
+  /// Title of the message box
   #[arg(short, long, default_value_t = APP_FULL_NAME.to_string())]
   title: String,
 
