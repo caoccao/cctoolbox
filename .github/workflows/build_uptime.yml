@@ -5,18 +5,23 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
+      - ".github/workflows/build_uptime.yml"
       - "uptime/**"
       - "!uptime/*.md"
   push:
     branches:
       - main
     paths:
+      - ".github/workflows/build_uptime.yml"
       - "uptime/**"
       - "!uptime/*.md"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
+
+env:
+  VERSION: 0.1.0
 
 jobs:
   build:
@@ -41,5 +46,5 @@ jobs:
     - name: Upload Uptime
       uses: actions/upload-artifact@v4
       with:
-        name: uptime-windows-x86_64-0.1.0
+        name: uptime-windows-x86_64-${{ env.VERSION }}
         path: uptime/target/release/*.exe

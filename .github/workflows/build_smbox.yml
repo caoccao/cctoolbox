@@ -1,0 +1,74 @@
+name: Build Simple Message Box
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - ".github/workflows/build_smbox.yml"
+      - "simple-message-box/**"
+      - "!simple-message-box/*.md"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/build_smbox.yml"
+      - "simple-message-box/**"
+      - "!simple-message-box/*.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  VERSION: 0.1.0
+
+jobs:
+  build_native:
+    strategy:
+      matrix:
+        include:
+          - image: windows-latest
+            os: windows
+            arch: x86_64
+            ext: .exe
+          - image: ubuntu-latest
+            os: linux
+            arch: x86_64
+            ext: 
+          - image: macos-13
+            os: macos
+            arch: x86_64
+            ext: 
+          - image: macos-14
+            os: macos
+            arch: arm64
+            ext: 
+
+    name: Build for ${{ matrix.os }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.image }}
+
+    steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
+
+    - name: Checkout the code
+      uses: actions/checkout@v4
+
+    - name: Setup Rust
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        toolchain: stable
+
+    - name: Build Binary
+      run: |
+        cd simple-message-box
+        cargo build --release
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: smbox-${{ matrix.os }}-${{ matrix.arch }}-${{ env.VERSION }}
+        path: simple-message-box/target/release/smbox${{ matrix.ext }}
