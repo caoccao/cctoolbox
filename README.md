@@ -1,6 +1,6 @@
 # CCToolbox
 
-[![Build Touch](https://github.com/caoccao/cctoolbox/actions/workflows/build_touch.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_touch.yml) [![Build Uptime](https://github.com/caoccao/cctoolbox/actions/workflows/build_uptime.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_uptime.yml) [![Build web-tools](https://github.com/caoccao/cctoolbox/actions/workflows/build_web_tools.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_web_tools.yml)
+[![Build Simple Message Box](https://github.com/caoccao/cctoolbox/actions/workflows/build_smbox.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_smbox.yml) [![Build Touch](https://github.com/caoccao/cctoolbox/actions/workflows/build_touch.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_touch.yml) [![Build Uptime](https://github.com/caoccao/cctoolbox/actions/workflows/build_uptime.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_uptime.yml) [![Build web-tools](https://github.com/caoccao/cctoolbox/actions/workflows/build_web_tools.yml/badge.svg)](https://github.com/caoccao/cctoolbox/actions/workflows/build_web_tools.yml)
 
 CCToolbox is a collection of small open source tools written by Sam Cao for fun.
 

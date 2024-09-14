@@ -141,7 +141,7 @@ fn main() {
   if args.verbose {
     app_launcher = app_launcher.log_to_console();
   }
-  app_launcher.launch(0).expect("Failed to launch application");
+  app_launcher.launch(-1).expect("Failed to launch application");
 }
 
 fn build_ui(args: &Args) -> impl druid::Widget<i64> {
