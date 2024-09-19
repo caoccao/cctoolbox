@@ -16,7 +16,7 @@
 */
 
 use clap::Parser;
-use druid::WidgetExt;
+use druid::{theme, Color, WidgetExt};
 use std::time::{Duration, SystemTime};
 
 const APP_SHORT_NAME: &str = "smbox";
@@ -137,7 +137,7 @@ fn main() {
     .set_position(get_position(&args))
     .title(args.title)
     .window_size((args.width as f64, args.height as f64));
-  let mut app_launcher = druid::AppLauncher::with_window(window);
+  let mut app_launcher = druid::AppLauncher::with_window(window).configure_env(set_light_theme);
   if args.verbose {
     app_launcher = app_launcher.log_to_console();
   }
@@ -158,9 +158,7 @@ fn build_ui(args: &Args) -> impl druid::Widget<i64> {
       let label = druid::widget::Label::new(message.to_owned())
         .with_text_size(20.0)
         .with_line_break_mode(druid::widget::LineBreaking::WordWrap)
-        .padding(4.0)
-        .border(druid::Color::grey(0.6), 1.0)
-        .rounded(5.0);
+        .padding(4.0);
       flex.add_child(label);
     });
   let button_close = AutoCloseButton::new(args.timeout)
@@ -184,4 +182,26 @@ fn get_position(args: &Args) -> druid::Point {
   } else {
     druid::Point::ZERO
   }
+}
+
+fn set_light_theme(env: &mut druid::Env, _: &i64) {
+  env.set(theme::WINDOW_BACKGROUND_COLOR, Color::WHITE);
+  env.set(theme::TEXT_COLOR, Color::rgb8(0x10, 0x10, 0x10));
+  env.set(theme::DISABLED_TEXT_COLOR, Color::rgb8(0x60, 0x60, 0x60));
+  env.set(theme::PLACEHOLDER_COLOR, Color::rgb8(0x80, 0x80, 0x80));
+  env.set(theme::PRIMARY_LIGHT, Color::rgb8(0xA0, 0xA0, 0xA0));
+  env.set(theme::PRIMARY_DARK, Color::rgb8(0x80, 0x80, 0x80));
+  env.set(theme::BACKGROUND_LIGHT, Color::rgb8(0xEE, 0xEE, 0xEE));
+  env.set(theme::BACKGROUND_DARK, Color::rgb8(0xBB, 0xBB, 0xBB));
+  env.set(theme::FOREGROUND_LIGHT, Color::WHITE);
+  env.set(theme::FOREGROUND_DARK, Color::rgb8(0xCD, 0xCD, 0xCD));
+  env.set(theme::DISABLED_FOREGROUND_LIGHT, Color::rgb8(0xA0, 0xA0, 0xA0));
+  env.set(theme::DISABLED_FOREGROUND_DARK, Color::rgb8(0x80, 0x80, 0x80));
+  env.set(theme::BUTTON_LIGHT, Color::rgb8(0xE0, 0xE0, 0xE0));
+  env.set(theme::BUTTON_DARK, Color::rgb8(0xC0, 0xC0, 0xC0));
+  env.set(theme::BORDER_DARK, Color::rgb8(0x60, 0x60, 0x60));
+  env.set(theme::BORDER_LIGHT, Color::rgb8(0x90, 0x90, 0x90));
+  env.set(theme::SELECTION_TEXT_COLOR, Color::rgb8(0x00, 0x00, 0x30));
+  env.set(theme::SCROLLBAR_COLOR, Color::rgb8(0xCD, 0xCD, 0xCD));
+  env.set(theme::SCROLLBAR_BORDER_COLOR, Color::rgb8(0xB0, 0xB0, 0xB0));
 }
