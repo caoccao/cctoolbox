@@ -72,6 +72,8 @@ jobs:
         toolchain: stable
 
     - name: Build Binary
+      env:
+        RUSTFLAGS: -Awarnings
       run: |
         cd simple-message-box
         ${{ matrix.command }}
