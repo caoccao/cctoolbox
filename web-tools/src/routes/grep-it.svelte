@@ -1,6 +1,6 @@
 <script lang="ts">
   /*
-    *   Copyright (c) 2024. caoccao.com Sam Cao
+    *   Copyright (c) 2024-2025. caoccao.com Sam Cao
     *   All rights reserved.
 
     *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -220,7 +220,7 @@
         case '6':
         case '7':
         case '8':
-        case '9':
+        case '9': {
           textAreaTemplateSelectionStart = textAreaTemplate.selectionStart;
           textAreaTemplateSelectionEnd = textAreaTemplate.selectionEnd;
           const prefix = templateValue.slice(0, textAreaTemplateSelectionStart);
@@ -230,6 +230,7 @@
           textAreaTemplateSelectionStart = newPosition;
           textAreaTemplateSelectionEnd = newPosition;
           break;
+        }
       }
     }
   }

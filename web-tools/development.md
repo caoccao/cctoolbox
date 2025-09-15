@@ -48,4 +48,4 @@ You can preview the production build with `pnpm run preview`.
 
 ## References
 
-* [Svelte UI](https://svelteui.dev/)
+- [Svelte UI](https://svelteui.dev/)

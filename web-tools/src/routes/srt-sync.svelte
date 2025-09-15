@@ -1,6 +1,6 @@
 <script lang="ts">
   /*
-    *   Copyright (c) 2024. caoccao.com Sam Cao
+    *   Copyright (c) 2024-2025. caoccao.com Sam Cao
     *   All rights reserved.
 
     *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +16,11 @@
     *   limitations under the License.
     */
   import { Button, Checkbox, Grid, Group, TextInput, Title } from '@svelteuidev/core';
-  import type { ChangeEventHandler } from 'svelte/elements';
 
   const SRT_LINE_SEPARATOR_PATTERN = /[\r\n]/;
   const SRT_INDEX_PATTERN = /^\s*\d+\s*$/;
   const SRT_TIME_PATTERN =
-    /^\s*(\-?)(\d{2}:\d{2}:\d{2},\d{3})\s*\-{2}\>\s*(\-?)(\d{2}:\d{2}:\d{2},\d{3})\s*$/;
+    /^\s*(-?)(\d{2}:\d{2}:\d{2},\d{3})\s*-{2}>\s*(-?)(\d{2}:\d{2}:\d{2},\d{3})\s*$/;
 
   const millisToSrtTime = (millis: number, pointChar: string = ',') => {
     millis = Math.round(millis);
