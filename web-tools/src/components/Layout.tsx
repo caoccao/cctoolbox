@@ -33,6 +33,8 @@ const Layout = ({ children }: LayoutProps) => {
   const getTabValue = () => {
     if (location.pathname.includes('/grep-it')) return '/grep-it';
     if (location.pathname.includes('/srt-sync')) return '/srt-sync';
+    if (location.pathname.includes('/base64-decode')) return '/base64-decode';
+    if (location.pathname.includes('/base64-encode')) return '/base64-encode';
     return '/grep-it';
   };
 
@@ -51,6 +53,8 @@ const Layout = ({ children }: LayoutProps) => {
         <Tabs value={getTabValue()} onChange={handleTabChange} centered>
           <Tab label="Grep It" value="/grep-it" sx={{ textTransform: 'none' }} />
           <Tab label="Srt Sync" value="/srt-sync" sx={{ textTransform: 'none' }} />
+          <Tab label="Base64 Decode" value="/base64-decode" sx={{ textTransform: 'none' }} />
+          <Tab label="Base64 Encode" value="/base64-encode" sx={{ textTransform: 'none' }} />
         </Tabs>
         <Box sx={{ mt: 2 }}>{children}</Box>
       </Container>

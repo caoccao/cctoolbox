@@ -21,6 +21,8 @@ import { theme } from './theme';
 import Layout from './components/Layout';
 import GrepIt from './components/GrepIt';
 import SrtSync from './components/SrtSync';
+import Base64Decode from './components/Base64Decode';
+import Base64Encode from './components/Base64Encode';
 
 function App() {
   return (
@@ -32,6 +34,8 @@ function App() {
             <Route path="/" element={<Navigate to="/grep-it" replace />} />
             <Route path="/grep-it" element={<GrepIt />} />
             <Route path="/srt-sync" element={<SrtSync />} />
+            <Route path="/base64-decode" element={<Base64Decode />} />
+            <Route path="/base64-encode" element={<Base64Encode />} />
           </Routes>
         </Layout>
       </BrowserRouter>
