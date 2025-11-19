@@ -14,6 +14,10 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
+import { createTheme } from '@mui/material/styles';
 
-export const prerender = true;
-export const ssr = false;
+export const theme = createTheme({
+  palette: {
+    mode: 'light'
+  }
+});

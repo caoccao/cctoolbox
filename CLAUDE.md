@@ -11,8 +11,8 @@ CCToolbox is a collection of small open source tools written by Sam Cao, contain
 - **uptime** - Uptime command for Windows
 - **simple-message-box (smbox)** - Cross-platform GUI message box for console automation
 
-### TypeScript/Svelte Project
-- **web-tools** - SvelteKit-based web application with tools like "Grep It" and "Srt Sync"
+### TypeScript/React Project
+- **web-tools** - React-based web application with tools like "Grep It" and "Srt Sync"
 
 ### Other Tools
 - **hide-volume-osd** - Windows volume OSD visibility tool
@@ -33,7 +33,7 @@ cd simple-message-box
 RUSTFLAGS="-Awarnings" cargo build --release
 ```
 
-### Web Tools (SvelteKit)
+### Web Tools (React + Vite)
 ```bash
 cd web-tools
 
@@ -66,19 +66,23 @@ pnpm run test
 - All tools are designed as native Windows replacements for Linux utilities
 
 ### Web Tools Architecture
-- SvelteKit application using TypeScript
-- Uses SvelteUI component library (`@svelteuidev/core`)
-- Route-based structure with hash-based navigation
-- Two main tools implemented as separate Svelte components:
-  - `grep-it.svelte` - JavaScript regex tool with template generation
-  - `srt-sync.svelte` - Subtitle file timeline synchronization
+- React application using TypeScript and Vite
+- Uses Material-UI (MUI) component library (`@mui/material`)
+- Path-based routing with React Router DOM
+- Two main tools implemented as separate React components:
+  - `GrepIt.tsx` - JavaScript regex tool with template generation
+  - `SrtSync.tsx` - Subtitle file timeline synchronization with native MUI Table
+- Component structure:
+  - `Layout.tsx` - Header, footer, and tab navigation
+  - `types/srt.ts` - SRT data models (SrtLine, SrtMarker, Velocity classes)
+  - `utils/srtParser.ts` - SRT parsing utilities
 - Static site generation for GitHub Pages deployment
 
 ### Build Automation
 - GitHub Actions workflows for each project:
   - `build_smbox.yml` - Cross-platform builds (Windows, Linux, macOS x86_64/ARM64)
   - `build_touch.yml`, `build_uptime.yml` - Platform-specific builds
-  - `build_web_tools.yml` - SvelteKit build and GitHub Pages deployment
+  - `build_web_tools.yml` - React build and GitHub Pages deployment
 - All Rust builds use `RUSTFLAGS="-Awarnings"` to suppress warnings
 
 ## Important Dependencies
@@ -89,7 +93,7 @@ pnpm run test
 
 ### Key Libraries
 - Rust: `clap`, `chrono`, `filetime` (touch), `druid` (simple-message-box)
-- Web: SvelteKit, TypeScript, SvelteUI, Vite, Vitest
+- Web: React, React Router DOM, Material-UI (MUI), TypeScript, Vite, Vitest
 
 ## Development Notes
 

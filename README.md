@@ -17,18 +17,18 @@ Why rewrite the tools in Rust? Isn't the Git for Windows good enough? The proble
 
 [web-tools](https://www.caoccao.com/cctoolbox/) is a set of web based tools as follows.
 
-| Name | Description |
-| ---- | ----------- |
-| [Grep It](https://www.caoccao.com/cctoolbox/#grep-it) | Apply JavaScript regular expression to input text and template for code generation. |
-| [Srt Sync](https://www.caoccao.com/cctoolbox/#srt-sync) | Sync timeline of one or two subtitle files. |
+| Name                                                   | Description                                                                         |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| [Grep It](https://www.caoccao.com/cctoolbox/grep-it)   | Apply JavaScript regular expression to input text and template for code generation. |
+| [Srt Sync](https://www.caoccao.com/cctoolbox/srt-sync) | Sync timeline of one or two subtitle files.                                         |
 
 ## Other Tools
 
-| Name | Description |
-| ---- | ----------- |
-| [Hide Volume OSD](hide-volume-osd) | Hide Volume OSD is a tool for hiding/showing the volume OSD. |
-| [PKU Check](pku-check) | PKU Check is a console application that checks the availability of Linux kernel feature [Memory Protection Keys](https://www.kernel.org/doc/html/next/core-api/protection-keys.html) on a certain Linux distribution. |
-| [Simple Message Box](simple-message-box) | A cross-platform message box that shows arbitrary messages in GUI for alerting in console automation. |
+| Name                                     | Description                                                                                                                                                                                                           |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Hide Volume OSD](hide-volume-osd)       | Hide Volume OSD is a tool for hiding/showing the volume OSD.                                                                                                                                                          |
+| [PKU Check](pku-check)                   | PKU Check is a console application that checks the availability of Linux kernel feature [Memory Protection Keys](https://www.kernel.org/doc/html/next/core-api/protection-keys.html) on a certain Linux distribution. |
+| [Simple Message Box](simple-message-box) | A cross-platform message box that shows arbitrary messages in GUI for alerting in console automation.                                                                                                                 |
 
 ## License
 
