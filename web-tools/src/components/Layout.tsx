@@ -49,8 +49,8 @@ const Layout = ({ children }: LayoutProps) => {
       </Container>
       <Container maxWidth="xl">
         <Tabs value={getTabValue()} onChange={handleTabChange} centered>
-          <Tab label="Grep It" value="/grep-it" />
-          <Tab label="Srt Sync" value="/srt-sync" />
+          <Tab label="Grep It" value="/grep-it" sx={{ textTransform: 'none' }} />
+          <Tab label="Srt Sync" value="/srt-sync" sx={{ textTransform: 'none' }} />
         </Tabs>
         <Box sx={{ mt: 2 }}>{children}</Box>
       </Container>

@@ -73,6 +73,7 @@ const GrepIt = () => {
     }
   }, [selectionStart, selectionEnd]);
 
+  // @ts-ignore - i parameter is used in eval context
   const evaluateTemplate = (code: string, _: RegExpExecArray, i: number): string => {
     return eval(code);
   };
