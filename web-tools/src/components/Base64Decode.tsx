@@ -14,14 +14,15 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import { useTabState } from '../contexts/TabStateContext';
 
 const Base64Decode = () => {
-  const [inputValue, setInputValue] = useState('');
+  const { base64DecodeInput: inputValue, setBase64DecodeInput: setInputValue } = useTabState();
 
   const outputValue = useMemo(() => {
     if (inputValue === '') {

@@ -18,6 +18,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { theme } from './theme';
+import { TabStateProvider } from './contexts/TabStateContext';
 import Layout from './components/Layout';
 import GrepIt from './components/GrepIt';
 import SrtSync from './components/SrtSync';
@@ -28,17 +29,19 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Navigate to="/grep-it" replace />} />
-            <Route path="/grep-it" element={<GrepIt />} />
-            <Route path="/srt-sync" element={<SrtSync />} />
-            <Route path="/base64-decode" element={<Base64Decode />} />
-            <Route path="/base64-encode" element={<Base64Encode />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
+      <TabStateProvider>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Navigate to="/grep-it" replace />} />
+              <Route path="/grep-it" element={<GrepIt />} />
+              <Route path="/srt-sync" element={<SrtSync />} />
+              <Route path="/base64-decode" element={<Base64Decode />} />
+              <Route path="/base64-encode" element={<Base64Encode />} />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </TabStateProvider>
     </ThemeProvider>
   );
 }

@@ -14,7 +14,6 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-import { useState } from 'react';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -30,17 +29,37 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { SrtLine, SrtMarker, SrtLineType, Velocity } from '../types/srt';
 import { srtTextToSrtLines } from '../utils/srtParser';
+import { useTabState } from '../contexts/TabStateContext';
 
 const SrtSync = () => {
-  const [isDirty, setIsDirty] = useState(false);
-  const [isSingleFileMode, setIsSingleFileMode] = useState(true);
-  const [srtMarkers, setSrtMarkers] = useState<SrtMarker[]>([]);
+  const { srtSyncState, setSrtSyncState } = useTabState();
 
-  const [originalLeftSrtLines, setOriginalLeftSrtLines] = useState<SrtLine[]>([]);
-  const [originalRightSrtLines, setOriginalRightSrtLines] = useState<SrtLine[]>([]);
+  // Destructure persisted state
+  const {
+    isDirty,
+    isSingleFileMode,
+    srtMarkers,
+    originalLeftSrtLines,
+    originalRightSrtLines,
+    leftSrtLines,
+    rightSrtLines
+  } = srtSyncState;
 
-  const [leftSrtLines, setLeftSrtLines] = useState<SrtLine[]>([]);
-  const [rightSrtLines, setRightSrtLines] = useState<SrtLine[]>([]);
+  // Helper functions to update persisted state
+  const setIsDirty = (value: boolean) =>
+    setSrtSyncState((prev) => ({ ...prev, isDirty: value }));
+  const setIsSingleFileMode = (value: boolean) =>
+    setSrtSyncState((prev) => ({ ...prev, isSingleFileMode: value }));
+  const setSrtMarkers = (value: SrtMarker[]) =>
+    setSrtSyncState((prev) => ({ ...prev, srtMarkers: value }));
+  const setOriginalLeftSrtLines = (value: SrtLine[]) =>
+    setSrtSyncState((prev) => ({ ...prev, originalLeftSrtLines: value }));
+  const setOriginalRightSrtLines = (value: SrtLine[]) =>
+    setSrtSyncState((prev) => ({ ...prev, originalRightSrtLines: value }));
+  const setLeftSrtLines = (value: SrtLine[]) =>
+    setSrtSyncState((prev) => ({ ...prev, leftSrtLines: value }));
+  const setRightSrtLines = (value: SrtLine[]) =>
+    setSrtSyncState((prev) => ({ ...prev, rightSrtLines: value }));
 
   const onChangeStart = (event: React.ChangeEvent<HTMLInputElement>, srtLine: SrtLine) => {
     try {

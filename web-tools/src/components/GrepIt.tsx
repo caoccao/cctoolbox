@@ -27,28 +27,55 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { useTabState } from '../contexts/TabStateContext';
 
 const fontFamily = '"Courier New", Courier, monospace';
 
 const GrepIt = () => {
-  const [caseSensitiveChecked, setCaseSensitiveChecked] = useState(false);
+  const { grepItState, setGrepItState } = useTabState();
+
+  // Ephemeral UI state (not persisted)
   const [modalChangeTemplateOpened, setModalChangeTemplateOpened] = useState(false);
   const [modalHelpOpened, setModalHelpOpened] = useState(false);
-  const [multilineChecked, setMultilineChecked] = useState(false);
-  const [removeDuplicatedChecked, setRemoveDuplicatedChecked] = useState(false);
-  const [sortChecked, setSortChecked] = useState(false);
-
-  const [changeTemplateValue, setChangeTemplateValue] = useState('_');
-  const [inputValue, setInputValue] = useState('');
-  const [patternValue, setPatternValue] = useState('[^\\r\\n]+');
-  const [templateValue, setTemplateValue] = useState('');
-
-  const [errorMessageCode, setErrorMessageCode] = useState('');
-  const [errorMessageInput, setErrorMessageInput] = useState('');
-
   const textAreaTemplateRef = useRef<HTMLTextAreaElement>(null);
   const [selectionStart, setSelectionStart] = useState<number | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<number | null>(null);
+
+  // Destructure persisted state
+  const {
+    caseSensitiveChecked,
+    multilineChecked,
+    removeDuplicatedChecked,
+    sortChecked,
+    changeTemplateValue,
+    inputValue,
+    patternValue,
+    templateValue,
+    errorMessageCode,
+    errorMessageInput
+  } = grepItState;
+
+  // Helper functions to update persisted state
+  const setCaseSensitiveChecked = (value: boolean) =>
+    setGrepItState((prev) => ({ ...prev, caseSensitiveChecked: value }));
+  const setMultilineChecked = (value: boolean) =>
+    setGrepItState((prev) => ({ ...prev, multilineChecked: value }));
+  const setRemoveDuplicatedChecked = (value: boolean) =>
+    setGrepItState((prev) => ({ ...prev, removeDuplicatedChecked: value }));
+  const setSortChecked = (value: boolean) =>
+    setGrepItState((prev) => ({ ...prev, sortChecked: value }));
+  const setChangeTemplateValue = (value: string) =>
+    setGrepItState((prev) => ({ ...prev, changeTemplateValue: value }));
+  const setInputValue = (value: string) =>
+    setGrepItState((prev) => ({ ...prev, inputValue: value }));
+  const setPatternValue = (value: string) =>
+    setGrepItState((prev) => ({ ...prev, patternValue: value }));
+  const setTemplateValue = (value: string) =>
+    setGrepItState((prev) => ({ ...prev, templateValue: value }));
+  const setErrorMessageCode = (value: string) =>
+    setGrepItState((prev) => ({ ...prev, errorMessageCode: value }));
+  const setErrorMessageInput = (value: string) =>
+    setGrepItState((prev) => ({ ...prev, errorMessageInput: value }));
 
   // Set font family on mount and when modal opens
   useEffect(() => {
