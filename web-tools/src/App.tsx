@@ -16,7 +16,7 @@
  */
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { theme } from './theme';
 import { TabStateProvider } from './contexts/TabStateContext';
 import Layout from './components/Layout';
@@ -30,7 +30,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <TabStateProvider>
-        <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <HashRouter>
           <Layout>
             <Routes>
               <Route path="/" element={<Navigate to="/grep-it" replace />} />
@@ -40,7 +40,7 @@ function App() {
               <Route path="/base64-encode" element={<Base64Encode />} />
             </Routes>
           </Layout>
-        </BrowserRouter>
+        </HashRouter>
       </TabStateProvider>
     </ThemeProvider>
   );
