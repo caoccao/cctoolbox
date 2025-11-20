@@ -24,6 +24,7 @@ import GrepIt from './components/GrepIt';
 import SrtSync from './components/SrtSync';
 import Base64Decode from './components/Base64Decode';
 import Base64Encode from './components/Base64Encode';
+import Uuid from './components/Uuid';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
               <Route path="/srt-sync" element={<SrtSync />} />
               <Route path="/base64-decode" element={<Base64Decode />} />
               <Route path="/base64-encode" element={<Base64Encode />} />
+              <Route path="/uuid" element={<Uuid />} />
             </Routes>
           </Layout>
         </HashRouter>

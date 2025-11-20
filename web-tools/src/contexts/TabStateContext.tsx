@@ -54,6 +54,14 @@ interface TabStateContextType {
   setBase64DecodeInput: (value: string) => void;
   base64EncodeInput: string;
   setBase64EncodeInput: (value: string) => void;
+
+  // UUID state
+  uuidVersion: string;
+  setUuidVersion: (value: string) => void;
+  uuidCount: number;
+  setUuidCount: (value: number) => void;
+  uuidHistory: string[];
+  setUuidHistory: (value: string[]) => void;
 }
 
 const TabStateContext = createContext<TabStateContextType | undefined>(undefined);
@@ -86,6 +94,9 @@ export const TabStateProvider = ({ children }: { children: ReactNode }) => {
   const [srtSyncState, setSrtSyncState] = useState<SrtSyncState>(initialSrtSyncState);
   const [base64DecodeInput, setBase64DecodeInput] = useState('');
   const [base64EncodeInput, setBase64EncodeInput] = useState('');
+  const [uuidVersion, setUuidVersion] = useState('v4');
+  const [uuidCount, setUuidCount] = useState(10);
+  const [uuidHistory, setUuidHistory] = useState<string[]>([]);
 
   return (
     <TabStateContext.Provider
@@ -97,7 +108,13 @@ export const TabStateProvider = ({ children }: { children: ReactNode }) => {
         base64DecodeInput,
         setBase64DecodeInput,
         base64EncodeInput,
-        setBase64EncodeInput
+        setBase64EncodeInput,
+        uuidVersion,
+        setUuidVersion,
+        uuidCount,
+        setUuidCount,
+        uuidHistory,
+        setUuidHistory
       }}
     >
       {children}
