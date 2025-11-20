@@ -36,6 +36,7 @@ const Layout = ({ children }: LayoutProps) => {
     if (location.pathname.includes('/base64-decode')) return '/base64-decode';
     if (location.pathname.includes('/base64-encode')) return '/base64-encode';
     if (location.pathname.includes('/uuid')) return '/uuid';
+    if (location.pathname.includes('/prettify')) return '/prettify';
     return '/grep-it';
   };
 
@@ -57,6 +58,7 @@ const Layout = ({ children }: LayoutProps) => {
           <Tab label="Base64 Decode" value="/base64-decode" sx={{ textTransform: 'none' }} />
           <Tab label="Base64 Encode" value="/base64-encode" sx={{ textTransform: 'none' }} />
           <Tab label="UUID" value="/uuid" sx={{ textTransform: 'none' }} />
+          <Tab label="Prettify" value="/prettify" sx={{ textTransform: 'none' }} />
         </Tabs>
         <Box sx={{ mt: 2 }}>{children}</Box>
       </Container>

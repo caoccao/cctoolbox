@@ -25,6 +25,7 @@ import SrtSync from './components/SrtSync';
 import Base64Decode from './components/Base64Decode';
 import Base64Encode from './components/Base64Encode';
 import Uuid from './components/Uuid';
+import Prettify from './components/Prettify';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
               <Route path="/base64-decode" element={<Base64Decode />} />
               <Route path="/base64-encode" element={<Base64Encode />} />
               <Route path="/uuid" element={<Uuid />} />
+              <Route path="/prettify" element={<Prettify />} />
             </Routes>
           </Layout>
         </HashRouter>

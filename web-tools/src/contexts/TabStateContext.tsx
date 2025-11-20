@@ -62,6 +62,14 @@ interface TabStateContextType {
   setUuidCount: (value: number) => void;
   uuidHistory: string[];
   setUuidHistory: (value: string[]) => void;
+
+  // Prettify state
+  prettifyFormat: string;
+  setPrettifyFormat: (value: string) => void;
+  prettifyIndent: number;
+  setPrettifyIndent: (value: number) => void;
+  prettifyInput: string;
+  setPrettifyInput: (value: string) => void;
 }
 
 const TabStateContext = createContext<TabStateContextType | undefined>(undefined);
@@ -97,6 +105,9 @@ export const TabStateProvider = ({ children }: { children: ReactNode }) => {
   const [uuidVersion, setUuidVersion] = useState('v4');
   const [uuidCount, setUuidCount] = useState(10);
   const [uuidHistory, setUuidHistory] = useState<string[]>([]);
+  const [prettifyFormat, setPrettifyFormat] = useState('json');
+  const [prettifyIndent, setPrettifyIndent] = useState(2);
+  const [prettifyInput, setPrettifyInput] = useState('');
 
   return (
     <TabStateContext.Provider
@@ -114,7 +125,13 @@ export const TabStateProvider = ({ children }: { children: ReactNode }) => {
         uuidCount,
         setUuidCount,
         uuidHistory,
-        setUuidHistory
+        setUuidHistory,
+        prettifyFormat,
+        setPrettifyFormat,
+        prettifyIndent,
+        setPrettifyIndent,
+        prettifyInput,
+        setPrettifyInput
       }}
     >
       {children}

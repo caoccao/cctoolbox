@@ -70,12 +70,13 @@ const Base64Encode = () => {
       <TextField
         label="Text Input"
         multiline
+        rows={10}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         sx={{ height: '40%' }}
         slotProps={{
           input: {
-            sx: { height: '100%', alignItems: 'flex-start' }
+            sx: { height: '100%', alignItems: 'flex-start', fontFamily: 'monospace' }
           }
         }}
         fullWidth
@@ -83,11 +84,12 @@ const Base64Encode = () => {
       <TextField
         label="Base64 Encoded Output"
         multiline
+        rows={10}
         value={outputValue}
         slotProps={{
           input: {
             readOnly: true,
-            sx: { height: '100%', alignItems: 'flex-start' }
+            sx: { height: '100%', alignItems: 'flex-start', fontFamily: 'monospace' }
           }
         }}
         sx={{ height: '40%' }}
