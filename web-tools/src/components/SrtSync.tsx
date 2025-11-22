@@ -21,6 +21,7 @@ import Checkbox from '@mui/material/Checkbox';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import Badge from '@mui/material/Badge';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -61,23 +62,34 @@ const SrtSync = () => {
   const setRightSrtLines = (value: SrtLine[]) =>
     setSrtSyncState((prev) => ({ ...prev, rightSrtLines: value }));
 
-  const onChangeStart = (event: React.ChangeEvent<HTMLInputElement>, srtLine: SrtLine) => {
-    try {
-      const newMarkers = [...srtMarkers];
-      newMarkers[srtLine.getMarkerIndex()].right = new SrtLine(
-        srtLine.getIndex(),
-        SrtLineType.Right
-      ).setStartText(event.target.value);
-      setSrtMarkers(newMarkers);
-      setIsDirty(true);
-    } catch (e) {
-      console.error(e);
+  const onChangeTextField = (event: React.ChangeEvent<HTMLInputElement>, srtLine: SrtLine) => {
+    const newSrtMarkers = [...srtMarkers]
+    const newSrtMarker = newSrtMarkers[srtLine.getMarkerIndex()]
+    newSrtMarker.value = event.target.value;
+    setSrtMarkers(newSrtMarkers);
+    setIsDirty(true);
+  }
+
+  function onBlurTextField(srtLine: SrtLine): void {
+    const newSrtMarkers = [...srtMarkers]
+    const newSrtMarker = newSrtMarkers[srtLine.getMarkerIndex()]
+    newSrtMarker.right = new SrtLine(
+      srtLine.getIndex(),
+      SrtLineType.Right
+    ).setStartText(newSrtMarker.value ?? srtLine.getStartText('.'));
+    setSrtMarkers(newSrtMarkers);
+    setIsDirty(true);
+  }
+
+  function onKeyUpTextField(event: React.KeyboardEvent<HTMLDivElement>): void {
+    if (event.key === 'Enter') {
+      event.currentTarget.blur();
     }
-  };
+  }
 
   const onClickLeftCopy = () => {
     navigator.clipboard.writeText(leftSrtLines.map((srtLine) => srtLine.toString()).join('\n'));
-  };
+  }
 
   const onClickLeftPaste = () => {
     navigator.clipboard.readText().then((text) => {
@@ -119,6 +131,7 @@ const SrtSync = () => {
         if (!found) {
           const marker = new SrtMarker();
           marker.left = srtLine;
+          marker.value = srtLine.getStartText('.');
           markers.push(marker);
         }
       } else {
@@ -133,6 +146,7 @@ const SrtSync = () => {
         if (!found) {
           const marker = new SrtMarker();
           marker.right = srtLine;
+          marker.value = srtLine.getStartText('.');
           markers.push(marker);
         }
       }
@@ -208,106 +222,124 @@ const SrtSync = () => {
   };
 
   const sync = (type: SrtLineType) => {
-    const length = srtMarkers.length;
-    if (isSingleFileMode) {
-      setRightSrtLines(leftSrtLines.map((srtLine) => srtLine.toClone().setType(SrtLineType.Right)));
-    }
-    if (length == 1) {
-      if (type === SrtLineType.Left) {
-        const diffTime = srtMarkers[0].right!.getStart() - srtMarkers[0].left!.getStart();
-        leftSrtLines.forEach((srtLine) => {
-          srtLine.shiftTime(diffTime);
-        });
-        setLeftSrtLines([...leftSrtLines]);
-      } else {
-        const diffTime = isSingleFileMode
-          ? srtMarkers[0].right!.getStart() - srtMarkers[0].left!.getStart()
-          : srtMarkers[0].left!.getStart() - srtMarkers[0].right!.getStart();
-        rightSrtLines.forEach((srtLine) => {
-          srtLine.shiftTime(diffTime);
-        });
-        setRightSrtLines([...rightSrtLines]);
+    setSrtSyncState((prev) => {
+      const { srtMarkers, isSingleFileMode, leftSrtLines, rightSrtLines } = prev;
+      const length = srtMarkers.length;
+
+      let newLeftSrtLines = leftSrtLines;
+      let newRightSrtLines = rightSrtLines;
+
+      if (isSingleFileMode) {
+        newRightSrtLines = leftSrtLines.map((srtLine) => srtLine.toClone().setType(SrtLineType.Right));
       }
-    } else if (length > 1) {
-      if (type === SrtLineType.Left) {
-        const velocities: Velocity[] = [];
-        for (let i = 0; i < length - 1; ++i) {
-          velocities.push(
-            new Velocity(
-              srtMarkers[i].right!.getStart() - srtMarkers[i].left!.getStart(),
-              srtMarkers[i + 1].right!.getStart() - srtMarkers[i + 1].left!.getStart(),
-              srtMarkers[i].left!.getStart(),
-              srtMarkers[i + 1].left!.getStart()
-            )
-          );
+
+      if (length == 1) {
+        if (type === SrtLineType.Left) {
+          const diffTime = srtMarkers[0].right!.getStart() - srtMarkers[0].left!.getStart();
+          newLeftSrtLines = leftSrtLines.map((srtLine) => {
+            const clone = srtLine.toClone();
+            clone.shiftTime(diffTime);
+            return clone;
+          });
+        } else {
+          const diffTime = isSingleFileMode
+            ? srtMarkers[0].right!.getStart() - srtMarkers[0].left!.getStart()
+            : srtMarkers[0].left!.getStart() - srtMarkers[0].right!.getStart();
+          newRightSrtLines = newRightSrtLines.map((srtLine) => {
+            const clone = srtLine.toClone();
+            clone.shiftTime(diffTime);
+            return clone;
+          });
         }
-        let velocityIndex = 0;
-        leftSrtLines.forEach((srtLine) => {
-          const start = srtLine.getStart();
-          let velocity = velocities[velocityIndex];
-          while (start > velocity.timeTo && velocityIndex < velocities.length - 1) {
-            ++velocityIndex;
-            velocity = velocities[velocityIndex];
-          }
-          if (
-            (velocityIndex == 0 && start < velocity.timeFrom) ||
-            (velocityIndex == velocities.length - 1 && start > velocity.timeTo) ||
-            (start >= velocity.timeFrom && start <= velocity.timeTo)
-          ) {
-            srtLine.shiftTime(
-              velocity.diffFrom +
-                ((velocity.diffTo - velocity.diffFrom) * (start - velocity.timeFrom)) /
-                  (velocity.timeTo - velocity.timeFrom)
+      } else if (length > 1) {
+        if (type === SrtLineType.Left) {
+          const velocities: Velocity[] = [];
+          for (let i = 0; i < length - 1; ++i) {
+            velocities.push(
+              new Velocity(
+                srtMarkers[i].right!.getStart() - srtMarkers[i].left!.getStart(),
+                srtMarkers[i + 1].right!.getStart() - srtMarkers[i + 1].left!.getStart(),
+                srtMarkers[i].left!.getStart(),
+                srtMarkers[i + 1].left!.getStart()
+              )
             );
-          } else {
-            console.warn('Ignore', srtLine);
           }
-        });
-        setLeftSrtLines([...leftSrtLines]);
-      } else {
-        const velocities: Velocity[] = [];
-        for (let i = 0; i < length - 1; ++i) {
-          velocities.push(
-            isSingleFileMode
-              ? new Velocity(
-                  srtMarkers[i].right!.getStart() - srtMarkers[i].left!.getStart(),
-                  srtMarkers[i + 1].right!.getStart() - srtMarkers[i + 1].left!.getStart(),
-                  srtMarkers[i].left!.getStart(),
-                  srtMarkers[i + 1].left!.getStart()
-                )
-              : new Velocity(
-                  srtMarkers[i].left!.getStart() - srtMarkers[i].right!.getStart(),
-                  srtMarkers[i + 1].left!.getStart() - srtMarkers[i + 1].right!.getStart(),
-                  srtMarkers[i].right!.getStart(),
-                  srtMarkers[i + 1].right!.getStart()
-                )
-          );
+          newLeftSrtLines = leftSrtLines.map((srtLine) => {
+            const clone = srtLine.toClone();
+            const start = clone.getStart();
+            let velocityIndex = 0;
+            let velocity = velocities[velocityIndex];
+            while (start > velocity.timeTo && velocityIndex < velocities.length - 1) {
+              ++velocityIndex;
+              velocity = velocities[velocityIndex];
+            }
+            if (
+              (velocityIndex == 0 && start < velocity.timeFrom) ||
+              (velocityIndex == velocities.length - 1 && start > velocity.timeTo) ||
+              (start >= velocity.timeFrom && start <= velocity.timeTo)
+            ) {
+              clone.shiftTime(
+                velocity.diffFrom +
+                  ((velocity.diffTo - velocity.diffFrom) * (start - velocity.timeFrom)) /
+                    (velocity.timeTo - velocity.timeFrom)
+              );
+            } else {
+              console.warn('Ignore', clone);
+            }
+            return clone;
+          });
+        } else {
+          const velocities: Velocity[] = [];
+          for (let i = 0; i < length - 1; ++i) {
+            velocities.push(
+              isSingleFileMode
+                ? new Velocity(
+                    srtMarkers[i].right!.getStart() - srtMarkers[i].left!.getStart(),
+                    srtMarkers[i + 1].right!.getStart() - srtMarkers[i + 1].left!.getStart(),
+                    srtMarkers[i].left!.getStart(),
+                    srtMarkers[i + 1].left!.getStart()
+                  )
+                : new Velocity(
+                    srtMarkers[i].left!.getStart() - srtMarkers[i].right!.getStart(),
+                    srtMarkers[i + 1].left!.getStart() - srtMarkers[i + 1].right!.getStart(),
+                    srtMarkers[i].right!.getStart(),
+                    srtMarkers[i + 1].right!.getStart()
+                  )
+            );
+          }
+          newRightSrtLines = newRightSrtLines.map((srtLine) => {
+            const clone = srtLine.toClone();
+            const start = clone.getStart();
+            let velocityIndex = 0;
+            let velocity = velocities[velocityIndex];
+            while (start > velocity.timeTo && velocityIndex < velocities.length - 1) {
+              ++velocityIndex;
+              velocity = velocities[velocityIndex];
+            }
+            if (
+              (velocityIndex == 0 && start < velocity.timeFrom) ||
+              (velocityIndex == velocities.length - 1 && start > velocity.timeTo) ||
+              (start >= velocity.timeFrom && start <= velocity.timeTo)
+            ) {
+              clone.shiftTime(
+                velocity.diffFrom +
+                  ((velocity.diffTo - velocity.diffFrom) * (start - velocity.timeFrom)) /
+                    (velocity.timeTo - velocity.timeFrom)
+              );
+            } else {
+              console.warn('Ignore', clone);
+            }
+            return clone;
+          });
         }
-        let velocityIndex = 0;
-        rightSrtLines.forEach((srtLine) => {
-          const start = srtLine.getStart();
-          let velocity = velocities[velocityIndex];
-          while (start > velocity.timeTo && velocityIndex < velocities.length - 1) {
-            ++velocityIndex;
-            velocity = velocities[velocityIndex];
-          }
-          if (
-            (velocityIndex == 0 && start < velocity.timeFrom) ||
-            (velocityIndex == velocities.length - 1 && start > velocity.timeTo) ||
-            (start >= velocity.timeFrom && start <= velocity.timeTo)
-          ) {
-            srtLine.shiftTime(
-              velocity.diffFrom +
-                ((velocity.diffTo - velocity.diffFrom) * (start - velocity.timeFrom)) /
-                  (velocity.timeTo - velocity.timeFrom)
-            );
-          } else {
-            console.warn('Ignore', srtLine);
-          }
-        });
-        setRightSrtLines([...rightSrtLines]);
       }
-    }
+
+      return {
+        ...prev,
+        leftSrtLines: newLeftSrtLines,
+        rightSrtLines: newRightSrtLines
+      };
+    });
   };
 
   return (
@@ -428,26 +460,23 @@ const SrtSync = () => {
                   }}
                 >
                   <TableCell align="center" sx={{ width: '4em', maxWidth: '4em' }}>
-                    {srtLine.getMarkerIndex() >= 0 &&
-                      srtLine.getMarkerIndex() < srtMarkers.length && (
-                        <Box
-                          component="span"
-                          sx={{
-                            position: 'relative',
-                            top: '-0.5em',
-                            display: 'inline-block',
-                            backgroundColor: 'darkorange',
-                            color: 'white',
+                    {srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length ? (
+                      <Badge
+                        badgeContent={srtLine.getMarkerIndex() + 1}
+                        color="warning"
+                        sx={{
+                          '& .MuiBadge-badge': {
                             fontSize: '0.75rem',
-                            textAlign: 'center',
-                            px: 0.5,
-                            borderRadius: '5px'
-                          }}
-                        >
-                          {`${srtLine.getMarkerIndex() + 1}`}
-                        </Box>
-                      )}{' '}
-                    {srtLine.getIndex()}
+                            height: '18px',
+                            minWidth: '18px'
+                          }
+                        }}
+                      >
+                        <Box component="span">{srtLine.getIndex()}</Box>
+                      </Badge>
+                    ) : (
+                      srtLine.getIndex()
+                    )}
                   </TableCell>
                   <TableCell
                     align="center"
@@ -462,13 +491,11 @@ const SrtSync = () => {
                       <TextField
                         size="small"
                         value={
-                          srtMarkers[srtLine.getMarkerIndex()].right
-                            ? srtMarkers[srtLine.getMarkerIndex()].right?.getStartText('.')
-                            : srtLine.getStartText('.')
+                          srtMarkers[srtLine.getMarkerIndex()].value ?? srtLine.getStartText('.')
                         }
-                        onChange={(event) => {
-                          onChangeStart(event as any, srtLine);
-                        }}
+                        onChange={(event) => onChangeTextField(event as React.ChangeEvent<HTMLInputElement>, srtLine)}
+                        onBlur={() => onBlurTextField(srtLine)}
+                        onKeyUp={onKeyUpTextField}
                         sx={{
                           '& input': {
                             textAlign: 'center',
@@ -545,26 +572,23 @@ const SrtSync = () => {
                   }}
                 >
                   <TableCell align="center" sx={{ width: '4em', maxWidth: '4em' }}>
-                    {srtLine.getMarkerIndex() >= 0 &&
-                      srtLine.getMarkerIndex() < srtMarkers.length && (
-                        <Box
-                          component="span"
-                          sx={{
-                            position: 'relative',
-                            top: '-0.5em',
-                            display: 'inline-block',
-                            backgroundColor: 'darkorange',
-                            color: 'white',
-                            fontSize: '0.75rem',
-                            textAlign: 'center',
-                            px: 0.5,
-                            borderRadius: '5px'
-                          }}
-                        >
-                          {`${srtLine.getMarkerIndex() + 1}`}
-                        </Box>
-                      )}{' '}
-                    {srtLine.getIndex()}
+                    {srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length ? (
+                      <Badge
+                        badgeContent={srtLine.getMarkerIndex() + 1}
+                        color="warning"
+                        sx={{
+                          '& .MuiBadge-badge': {
+                            fontSize: '0.5rem',
+                            height: '12px',
+                            minWidth: '12px'
+                          }
+                        }}
+                      >
+                        <Box component="span">{srtLine.getIndex()}</Box>
+                      </Badge>
+                    ) : (
+                      srtLine.getIndex()
+                    )}
                   </TableCell>
                   <TableCell
                     align="center"

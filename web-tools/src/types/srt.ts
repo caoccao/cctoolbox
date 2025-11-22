@@ -133,14 +133,17 @@ export class SrtLine {
 export class SrtMarker {
   left: SrtLine | null;
   right: SrtLine | null;
+  value: string | null;
 
   constructor() {
     this.left = null;
     this.right = null;
+    this.value = null;
   }
 
   clear() {
     this.setMarkerIndex(-1);
+    this.value = null;
   }
 
   setMarkerIndex(index: number) {
