@@ -22,6 +22,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import Editor from '@monaco-editor/react';
+import formatXmlString from 'xml-formatter';
 import { useTabState } from '../contexts/TabStateContext';
 
 const FORMAT_TYPES = [
@@ -75,39 +77,11 @@ const Prettify = () => {
 
   const formatXml = (text: string, indent: number): string => {
     try {
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(text, 'text/xml');
-
-      const parserError = xmlDoc.querySelector('parsererror');
-      if (parserError) {
-        return `Error: ${parserError.textContent}`;
-      }
-
-      const serializer = new XMLSerializer();
-      const xmlString = serializer.serializeToString(xmlDoc);
-
-      // Format XML with indentation
-      const formatted = xmlString.replace(/></g, '>\n<');
-      const lines = formatted.split('\n');
-      let indentLevel = 0;
-      const indentStr = ' '.repeat(indent);
-
-      return lines
-        .map((line) => {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('</')) {
-            indentLevel = Math.max(0, indentLevel - 1);
-          }
-
-          const indented = indentStr.repeat(indentLevel) + trimmed;
-
-          if (trimmed.startsWith('<') && !trimmed.startsWith('</') && !trimmed.endsWith('/>')) {
-            indentLevel++;
-          }
-
-          return indented;
-        })
-        .join('\n');
+      return formatXmlString(text, {
+        indentation: ' '.repeat(indent),
+        collapseContent: true,
+        lineSeparator: '\n'
+      });
     } catch (error) {
       if (error instanceof Error) {
         return `Error: ${error.message}`;
@@ -182,20 +156,23 @@ const Prettify = () => {
         </Button>
       </Box>
 
-      <TextField
-        label="Input"
-        multiline
-        rows={25}
-        value={prettifyInput}
-        onChange={(e) => setPrettifyInput(e.target.value)}
-        sx={{ height: '80%' }}
-        slotProps={{
-          input: {
-            sx: { fontFamily: 'monospace' }
-          }
-        }}
-        fullWidth
-      />
+      <Box sx={{ height: '100%', flex: 1, border: '1px solid rgba(0, 0, 0, 0.23)', borderRadius: '4px' }}>
+        <Editor
+          height="100%"
+          language={prettifyFormat}
+          value={prettifyInput}
+          onChange={(value) => setPrettifyInput(value || '')}
+          options={{
+            minimap: { enabled: false },
+            fontSize: 14,
+            wordWrap: 'on',
+            automaticLayout: true,
+            scrollBeyondLastLine: false,
+            tabSize: prettifyIndent,
+            insertSpaces: true
+          }}
+        />
+      </Box>
     </Stack>
   );
 };

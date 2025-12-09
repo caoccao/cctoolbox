@@ -15,12 +15,14 @@
   "dependencies": {
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
+    "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^7.3.5",
     "@mui/material": "^7.3.5",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^6.28.0",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "xml-formatter": "^3.6.7"
   },
   "devDependencies": {
     "@types/react": "^19.2.6",
