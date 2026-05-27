@@ -26,7 +26,7 @@ import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutlined';
 import { useTabState } from '../contexts/TabStateContext';
 
 const fontFamily = '"Courier New", Courier, monospace';
@@ -100,12 +100,17 @@ const GrepIt = () => {
     }
   }, [selectionStart, selectionEnd]);
 
-  // @ts-ignore - i parameter is used in eval context
   const evaluateTemplate = (code: string, _: RegExpExecArray, i: number): string => {
+    // `_` (match) and `i` (index) are referenced by the user-defined template
+    // evaluated via `eval` below; reference them so they count as used.
+    void _;
+    void i;
     return eval(code);
   };
 
   const evaluateChangeTemplate = (code: string, _: string): string => {
+    // `_` (current template value) is referenced by the change-template evaluated below.
+    void _;
     return eval(code);
   };
 
@@ -268,7 +273,7 @@ const GrepIt = () => {
 
   return (
     <>
-      <Stack spacing={2} alignItems="stretch">
+      <Stack spacing={2} sx={{ alignItems: 'stretch' }}>
         <TextField
           label="Pattern *"
           value={patternValue}
@@ -358,8 +363,10 @@ const GrepIt = () => {
           multiline
           rows={10}
           value={outputValue}
-          InputProps={{
-            readOnly: true
+          slotProps={{
+            input: {
+              readOnly: true
+            }
           }}
           fullWidth
         />

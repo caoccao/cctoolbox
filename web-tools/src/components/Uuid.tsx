@@ -23,7 +23,14 @@ import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import { v1 as uuidv1, v3 as uuidv3, v4 as uuidv4, v5 as uuidv5, v6 as uuidv6, v7 as uuidv7 } from 'uuid';
+import {
+  v1 as uuidv1,
+  v3 as uuidv3,
+  v4 as uuidv4,
+  v5 as uuidv5,
+  v6 as uuidv6,
+  v7 as uuidv7
+} from 'uuid';
 import { useTabState } from '../contexts/TabStateContext';
 
 const UUID_VERSIONS = [
@@ -38,14 +45,8 @@ const UUID_VERSIONS = [
 const DNS_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // Standard DNS namespace
 
 const Uuid = () => {
-  const {
-    uuidVersion,
-    setUuidVersion,
-    uuidCount,
-    setUuidCount,
-    uuidHistory,
-    setUuidHistory
-  } = useTabState();
+  const { uuidVersion, setUuidVersion, uuidCount, setUuidCount, uuidHistory, setUuidHistory } =
+    useTabState();
 
   const [namespace, setNamespace] = useState(DNS_NAMESPACE);
   const [name, setName] = useState('example.com');
@@ -106,7 +107,15 @@ const Uuid = () => {
 
   return (
     <Stack spacing={2}>
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 2,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          justifyContent: 'center'
+        }}
+      >
         <FormControl sx={{ minWidth: 250 }}>
           <InputLabel id="uuid-version-label">Version</InputLabel>
           <Select

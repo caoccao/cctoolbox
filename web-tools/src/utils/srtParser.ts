@@ -18,7 +18,8 @@ import { SrtLine, SrtLineType } from '../types/srt';
 
 const SRT_LINE_SEPARATOR_PATTERN = /[\r\n]/;
 const SRT_INDEX_PATTERN = /^\s*\d+\s*$/;
-const SRT_TIME_PATTERN = /^\s*(-?)(\d{2}:\d{2}:\d{2},\d{3})\s*-{2}>\s*(-?)(\d{2}:\d{2}:\d{2},\d{3})\s*$/;
+const SRT_TIME_PATTERN =
+  /^\s*(-?)(\d{2}:\d{2}:\d{2},\d{3})\s*-{2}>\s*(-?)(\d{2}:\d{2}:\d{2},\d{3})\s*$/;
 
 export const millisToSrtTime = (millis: number, pointChar: string = ',') => {
   millis = Math.round(millis);
@@ -34,7 +35,7 @@ export const millisToSrtTime = (millis: number, pointChar: string = ',') => {
 };
 
 export const srtTimeToMillis = (srtTime: string) => {
-  const times = srtTime.split(/[:,\.]+/g);
+  const times = srtTime.split(/[:,.]+/g);
   return (
     parseInt(times[0]) * 3600000 +
     parseInt(times[1]) * 60000 +

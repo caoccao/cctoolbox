@@ -113,7 +113,15 @@ const Prettify = () => {
 
   return (
     <Stack spacing={2} sx={{ height: 'calc(100vh - 200px)' }}>
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 2,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          justifyContent: 'center'
+        }}
+      >
         <FormControl sx={{ minWidth: 120 }}>
           <InputLabel id="format-type-label">Format</InputLabel>
           <Select
@@ -156,7 +164,14 @@ const Prettify = () => {
         </Button>
       </Box>
 
-      <Box sx={{ height: '100%', flex: 1, border: '1px solid rgba(0, 0, 0, 0.23)', borderRadius: '4px' }}>
+      <Box
+        sx={{
+          height: '100%',
+          flex: 1,
+          border: '1px solid rgba(0, 0, 0, 0.23)',
+          borderRadius: '4px'
+        }}
+      >
         <Editor
           height="100%"
           language={prettifyFormat}

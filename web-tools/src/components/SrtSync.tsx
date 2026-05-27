@@ -47,8 +47,7 @@ const SrtSync = () => {
   } = srtSyncState;
 
   // Helper functions to update persisted state
-  const setIsDirty = (value: boolean) =>
-    setSrtSyncState((prev) => ({ ...prev, isDirty: value }));
+  const setIsDirty = (value: boolean) => setSrtSyncState((prev) => ({ ...prev, isDirty: value }));
   const setIsSingleFileMode = (value: boolean) =>
     setSrtSyncState((prev) => ({ ...prev, isSingleFileMode: value }));
   const setSrtMarkers = (value: SrtMarker[]) =>
@@ -63,20 +62,19 @@ const SrtSync = () => {
     setSrtSyncState((prev) => ({ ...prev, rightSrtLines: value }));
 
   const onChangeTextField = (event: React.ChangeEvent<HTMLInputElement>, srtLine: SrtLine) => {
-    const newSrtMarkers = [...srtMarkers]
-    const newSrtMarker = newSrtMarkers[srtLine.getMarkerIndex()]
+    const newSrtMarkers = [...srtMarkers];
+    const newSrtMarker = newSrtMarkers[srtLine.getMarkerIndex()];
     newSrtMarker.value = event.target.value;
     setSrtMarkers(newSrtMarkers);
     setIsDirty(true);
-  }
+  };
 
   function onBlurTextField(srtLine: SrtLine): void {
-    const newSrtMarkers = [...srtMarkers]
-    const newSrtMarker = newSrtMarkers[srtLine.getMarkerIndex()]
-    newSrtMarker.right = new SrtLine(
-      srtLine.getIndex(),
-      SrtLineType.Right
-    ).setStartText(newSrtMarker.value ?? srtLine.getStartText('.'));
+    const newSrtMarkers = [...srtMarkers];
+    const newSrtMarker = newSrtMarkers[srtLine.getMarkerIndex()];
+    newSrtMarker.right = new SrtLine(srtLine.getIndex(), SrtLineType.Right).setStartText(
+      newSrtMarker.value ?? srtLine.getStartText('.')
+    );
     setSrtMarkers(newSrtMarkers);
     setIsDirty(true);
   }
@@ -89,7 +87,7 @@ const SrtSync = () => {
 
   const onClickLeftCopy = () => {
     navigator.clipboard.writeText(leftSrtLines.map((srtLine) => srtLine.toString()).join('\n'));
-  }
+  };
 
   const onClickLeftPaste = () => {
     navigator.clipboard.readText().then((text) => {
@@ -230,7 +228,9 @@ const SrtSync = () => {
       let newRightSrtLines = rightSrtLines;
 
       if (isSingleFileMode) {
-        newRightSrtLines = leftSrtLines.map((srtLine) => srtLine.toClone().setType(SrtLineType.Right));
+        newRightSrtLines = leftSrtLines.map((srtLine) =>
+          srtLine.toClone().setType(SrtLineType.Right)
+        );
       }
 
       if (length == 1) {
@@ -449,8 +449,7 @@ const SrtSync = () => {
                   }}
                   sx={{
                     backgroundColor:
-                      srtLine.getMarkerIndex() >= 0 &&
-                      srtLine.getMarkerIndex() < srtMarkers.length
+                      srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length
                         ? '#eeeeff'
                         : 'inherit',
                     '&:hover': {
@@ -460,7 +459,8 @@ const SrtSync = () => {
                   }}
                 >
                   <TableCell align="center" sx={{ width: '4em', maxWidth: '4em' }}>
-                    {srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length ? (
+                    {srtLine.getMarkerIndex() >= 0 &&
+                    srtLine.getMarkerIndex() < srtMarkers.length ? (
                       <Badge
                         badgeContent={srtLine.getMarkerIndex() + 1}
                         color="warning"
@@ -493,7 +493,9 @@ const SrtSync = () => {
                         value={
                           srtMarkers[srtLine.getMarkerIndex()].value ?? srtLine.getStartText('.')
                         }
-                        onChange={(event) => onChangeTextField(event as React.ChangeEvent<HTMLInputElement>, srtLine)}
+                        onChange={(event) =>
+                          onChangeTextField(event as React.ChangeEvent<HTMLInputElement>, srtLine)
+                        }
                         onBlur={() => onBlurTextField(srtLine)}
                         onKeyUp={onKeyUpTextField}
                         sx={{
@@ -561,8 +563,7 @@ const SrtSync = () => {
                   }}
                   sx={{
                     backgroundColor:
-                      srtLine.getMarkerIndex() >= 0 &&
-                      srtLine.getMarkerIndex() < srtMarkers.length
+                      srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length
                         ? '#eeeeff'
                         : 'inherit',
                     '&:hover': {
@@ -572,7 +573,8 @@ const SrtSync = () => {
                   }}
                 >
                   <TableCell align="center" sx={{ width: '4em', maxWidth: '4em' }}>
-                    {srtLine.getMarkerIndex() >= 0 && srtLine.getMarkerIndex() < srtMarkers.length ? (
+                    {srtLine.getMarkerIndex() >= 0 &&
+                    srtLine.getMarkerIndex() < srtMarkers.length ? (
                       <Badge
                         badgeContent={srtLine.getMarkerIndex() + 1}
                         color="warning"
@@ -628,9 +630,7 @@ const SrtSync = () => {
       <Grid size={12}>
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
           <FormControlLabel
-            control={
-              <Checkbox checked={isSingleFileMode} onChange={onClickSingleFileMode} />
-            }
+            control={<Checkbox checked={isSingleFileMode} onChange={onClickSingleFileMode} />}
             label="Single File Mode"
           />
           <Button size="small" variant="outlined" onClick={onClickReset} disabled={!isDirty}>
