@@ -28,8 +28,9 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { SrtLine, SrtMarker, SrtLineType, Velocity } from '../types/srt';
+import { SrtLine, SrtMarker, SrtLineType } from '../types/srt';
 import { srtTextToSrtLines } from '../utils/srtParser';
+import { getSyncAnchors, shiftSrtLines } from '../utils/srtSync';
 import { useTabState } from '../contexts/TabStateContext';
 
 const SrtSync = () => {
@@ -222,116 +223,17 @@ const SrtSync = () => {
   const sync = (type: SrtLineType) => {
     setSrtSyncState((prev) => {
       const { srtMarkers, isSingleFileMode, leftSrtLines, rightSrtLines } = prev;
-      const length = srtMarkers.length;
+      const anchors = getSyncAnchors(srtMarkers, isSingleFileMode, type);
 
       let newLeftSrtLines = leftSrtLines;
-      let newRightSrtLines = rightSrtLines;
+      let newRightSrtLines = isSingleFileMode
+        ? leftSrtLines.map((srtLine) => srtLine.toClone().setType(SrtLineType.Right))
+        : rightSrtLines;
 
-      if (isSingleFileMode) {
-        newRightSrtLines = leftSrtLines.map((srtLine) =>
-          srtLine.toClone().setType(SrtLineType.Right)
-        );
-      }
-
-      if (length == 1) {
-        if (type === SrtLineType.Left) {
-          const diffTime = srtMarkers[0].right!.getStart() - srtMarkers[0].left!.getStart();
-          newLeftSrtLines = leftSrtLines.map((srtLine) => {
-            const clone = srtLine.toClone();
-            clone.shiftTime(diffTime);
-            return clone;
-          });
-        } else {
-          const diffTime = isSingleFileMode
-            ? srtMarkers[0].right!.getStart() - srtMarkers[0].left!.getStart()
-            : srtMarkers[0].left!.getStart() - srtMarkers[0].right!.getStart();
-          newRightSrtLines = newRightSrtLines.map((srtLine) => {
-            const clone = srtLine.toClone();
-            clone.shiftTime(diffTime);
-            return clone;
-          });
-        }
-      } else if (length > 1) {
-        if (type === SrtLineType.Left) {
-          const velocities: Velocity[] = [];
-          for (let i = 0; i < length - 1; ++i) {
-            velocities.push(
-              new Velocity(
-                srtMarkers[i].right!.getStart() - srtMarkers[i].left!.getStart(),
-                srtMarkers[i + 1].right!.getStart() - srtMarkers[i + 1].left!.getStart(),
-                srtMarkers[i].left!.getStart(),
-                srtMarkers[i + 1].left!.getStart()
-              )
-            );
-          }
-          newLeftSrtLines = leftSrtLines.map((srtLine) => {
-            const clone = srtLine.toClone();
-            const start = clone.getStart();
-            let velocityIndex = 0;
-            let velocity = velocities[velocityIndex];
-            while (start > velocity.timeTo && velocityIndex < velocities.length - 1) {
-              ++velocityIndex;
-              velocity = velocities[velocityIndex];
-            }
-            if (
-              (velocityIndex == 0 && start < velocity.timeFrom) ||
-              (velocityIndex == velocities.length - 1 && start > velocity.timeTo) ||
-              (start >= velocity.timeFrom && start <= velocity.timeTo)
-            ) {
-              clone.shiftTime(
-                velocity.diffFrom +
-                  ((velocity.diffTo - velocity.diffFrom) * (start - velocity.timeFrom)) /
-                    (velocity.timeTo - velocity.timeFrom)
-              );
-            } else {
-              console.warn('Ignore', clone);
-            }
-            return clone;
-          });
-        } else {
-          const velocities: Velocity[] = [];
-          for (let i = 0; i < length - 1; ++i) {
-            velocities.push(
-              isSingleFileMode
-                ? new Velocity(
-                    srtMarkers[i].right!.getStart() - srtMarkers[i].left!.getStart(),
-                    srtMarkers[i + 1].right!.getStart() - srtMarkers[i + 1].left!.getStart(),
-                    srtMarkers[i].left!.getStart(),
-                    srtMarkers[i + 1].left!.getStart()
-                  )
-                : new Velocity(
-                    srtMarkers[i].left!.getStart() - srtMarkers[i].right!.getStart(),
-                    srtMarkers[i + 1].left!.getStart() - srtMarkers[i + 1].right!.getStart(),
-                    srtMarkers[i].right!.getStart(),
-                    srtMarkers[i + 1].right!.getStart()
-                  )
-            );
-          }
-          newRightSrtLines = newRightSrtLines.map((srtLine) => {
-            const clone = srtLine.toClone();
-            const start = clone.getStart();
-            let velocityIndex = 0;
-            let velocity = velocities[velocityIndex];
-            while (start > velocity.timeTo && velocityIndex < velocities.length - 1) {
-              ++velocityIndex;
-              velocity = velocities[velocityIndex];
-            }
-            if (
-              (velocityIndex == 0 && start < velocity.timeFrom) ||
-              (velocityIndex == velocities.length - 1 && start > velocity.timeTo) ||
-              (start >= velocity.timeFrom && start <= velocity.timeTo)
-            ) {
-              clone.shiftTime(
-                velocity.diffFrom +
-                  ((velocity.diffTo - velocity.diffFrom) * (start - velocity.timeFrom)) /
-                    (velocity.timeTo - velocity.timeFrom)
-              );
-            } else {
-              console.warn('Ignore', clone);
-            }
-            return clone;
-          });
-        }
+      if (type === SrtLineType.Left) {
+        newLeftSrtLines = shiftSrtLines(leftSrtLines, anchors);
+      } else {
+        newRightSrtLines = shiftSrtLines(newRightSrtLines, anchors);
       }
 
       return {

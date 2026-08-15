@@ -10,6 +10,6 @@ export default defineConfig(({ command }) => ({
   },
   test: {
     include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
-    environment: 'jsdom'
+    environment: 'node'
   }
 }));
